@@ -1,0 +1,16 @@
+{
+  "name" : "Player Randomizer",
+  "description" : "Randomizes the players guns",
+  "author" : "Nebby",
+  "updates" : [
+    {
+      "revision" : 10,
+      "identifier" : "player_randomizer"
+    }
+  ],
+  "hooks" : [
+    { "hook_id" : "lib/managers/blackmarketmanager", "script_path" : "randomizer.lua" },
+    { "hook_id" : "lib/managers/menumanager", "script_path" : "randomizer.lua" },
+    { "hook_id" : "lib/managers/playermanager", "script_path" : "randomizer.lua" }
+  ]
+}
