@@ -20,7 +20,7 @@ function Randomizer:load()
 end
 
 function Randomizer:in_heist()
-  return managers and managers.player and managers.player:player_unit() and Utils:InHeist()
+  return managers and managers.player and managers.player:player_unit()
 end
 
 function Randomizer:chk_setup_weapons()
@@ -40,6 +40,9 @@ function Randomizer:chk_setup_weapons()
       end
     end
   end
+end
+
+function Randomizer:chk_setup_grenades()
   if not self.grenades then
     self.grenades = {}
     for grenade_id, grenade in pairs(tweak_data.blackmarket.projectiles) do
@@ -49,6 +52,9 @@ function Randomizer:chk_setup_weapons()
       end
     end
   end
+end
+
+function Randomizer:chk_setup_melees()
   if not self.melees then
     self.melees = {}
     for melee_weapon, data in pairs(tweak_data.blackmarket.melee_weapons) do
@@ -91,15 +97,66 @@ function Randomizer:build_random_weapon(selection_index)
 end
 
 function Randomizer:get_random_grenade()
-  self:chk_setup_weapons()
+  self:chk_setup_grenades()
   return Randomizer.grenades[math.random(#Randomizer.grenades)]
 end
 
 function Randomizer:get_random_melee()
-  self:chk_setup_weapons()
+  self:chk_setup_melees()
   return Randomizer.melees[math.random(#Randomizer.melees)]
 end
 
+------------------------ MOD STUFF ------------------------
+if RequiredScript == "lib/managers/blackmarketmanager" then
+  
+  local equipped_primary_original = BlackMarketManager.equipped_primary
+  function BlackMarketManager:equipped_primary(...)
+    if not Randomizer.data.random_primary or not Randomizer:in_heist() then
+      return equipped_primary_original(self, ...)
+    end
+    self._random_primary = self._random_primary or Randomizer:build_random_weapon(2)
+    return self._random_primary
+  end
+
+  local equipped_secondary_original = BlackMarketManager.equipped_secondary
+  function BlackMarketManager:equipped_secondary(...)
+    if not Randomizer.data.random_secondary or not Randomizer:in_heist() then
+      return equipped_secondary_original(self, ...)
+    end
+    self._random_secondary = self._random_secondary or Randomizer:build_random_weapon(1)
+    return self._random_secondary
+  end
+
+  local equipped_grenade_original = BlackMarketManager.equipped_grenade
+  function BlackMarketManager:equipped_grenade(...)
+    if not Randomizer.data.random_grenade or not Randomizer:in_heist() then
+      return equipped_grenade_original(self, ...)
+    end
+    self._original_grenade = equipped_grenade_original(self, ...)
+    self._random_grenade = self._random_grenade or Randomizer:get_random_grenade()
+    return self._random_grenade.id, self._random_grenade.amount
+  end
+  
+  local equipped_melee_weapon_original = BlackMarketManager.equipped_melee_weapon
+  function BlackMarketManager:equipped_melee_weapon(...)
+    if not Randomizer.data.random_melee or not Randomizer:in_heist() then
+      return equipped_melee_weapon_original(self, ...)
+    end
+    self._original_melee = equipped_melee_weapon_original(self, ...)
+    self._random_melee = self._random_melee or Randomizer:get_random_melee()
+    return self._random_melee.id
+  end
+  
+  local save_original = BlackMarketManager.save
+  function BlackMarketManager:save(data)
+    save_original(self, data)
+    data.blackmarket.equipped_grenade = self._original_grenade or data.blackmarket.equipped_grenade
+    data.blackmarket.equipped_melee_weapon = self._original_melee or data.blackmarket.equipped_melee_weapon
+  end
+  
+end
+
+-------------------- MENU STUFF --------------------
 if RequiredScript == "lib/managers/menumanager" then
 
   Hooks:Add("LocalizationManagerPostInit", "LocalizationManagerPostInitPlayerRandomizer", function(loc)
@@ -130,7 +187,7 @@ if RequiredScript == "lib/managers/menumanager" then
     MenuHelper:AddToggle({
       id = "random_primary",
       title = "bm_menu_primaries",
-      desc = "toggle_primary_desc",
+      desc = "primary_desc",
       callback = "Randomizer_toggle",
       value = Randomizer.data.random_primary,
       menu_id = menu_id_main,
@@ -139,7 +196,7 @@ if RequiredScript == "lib/managers/menumanager" then
     MenuHelper:AddToggle({
       id = "random_secondary",
       title = "bm_menu_secondaries",
-      desc = "toggle_secondary_desc",
+      desc = "secondary_desc",
       callback = "Randomizer_toggle",
       value = Randomizer.data.random_secondary,
       menu_id = menu_id_main,
@@ -148,18 +205,18 @@ if RequiredScript == "lib/managers/menumanager" then
     MenuHelper:AddToggle({
       id = "random_melee",
       title = "bm_menu_melee_weapons",
-      desc = "toggle_melee_desc",
+      desc = "melee_desc",
       callback = "Randomizer_toggle",
       value = Randomizer.data.random_melee,
       menu_id = menu_id_main,
       priority = 98
     })
     MenuHelper:AddToggle({
-      id = "random_throwable",
+      id = "random_grenade",
       title = "bm_menu_grenades",
-      desc = "toggle_throwable_desc",
+      desc = "grenade_desc",
       callback = "Randomizer_toggle",
-      value = Randomizer.data.random_throwable,
+      value = Randomizer.data.random_grenade,
       menu_id = menu_id_main,
       priority = 97
     })
@@ -171,44 +228,4 @@ if RequiredScript == "lib/managers/menumanager" then
     MenuHelper:AddMenuItem(MenuHelper:GetMenu("lua_mod_options_menu"), menu_id_main, "Randomizer_menu_main_name", "Randomizer_menu_main_desc")
   end)
 
-end
-
-if RequiredScript == "lib/managers/blackmarketmanager" then
-  
-  local equipped_primary_original = BlackMarketManager.equipped_primary
-  function BlackMarketManager:equipped_primary(...)
-    if not Randomizer.data.random_primary or not Randomizer:in_heist() then
-      return equipped_primary_original(self, ...)
-    end
-    self._random_primary = self._random_primary or Randomizer:build_random_weapon(2)
-    return self._random_primary
-  end
-
-  local equipped_secondary_original = BlackMarketManager.equipped_secondary
-  function BlackMarketManager:equipped_secondary(...)
-    if not Randomizer.data.random_secondary or not Randomizer:in_heist() then
-      return equipped_secondary_original(self, ...)
-    end
-    self._random_secondary = self._random_secondary or Randomizer:build_random_weapon(1)
-    return self._random_secondary
-  end
-
-  local equipped_grenade_original = BlackMarketManager.equipped_grenade
-  function BlackMarketManager:equipped_grenade(...)
-    if not Randomizer.data.random_throwable or not Randomizer:in_heist() then
-      return equipped_grenade_original(self, ...)
-    end
-    self._random_grenade = self._random_grenade or Randomizer:get_random_grenade()
-    return self._random_grenade.id, self._random_grenade.amount
-  end
-  
-  local equipped_melee_weapon_original = BlackMarketManager.equipped_melee_weapon
-  function BlackMarketManager:equipped_melee_weapon(...)
-    if not Randomizer.data.random_melee or not Randomizer:in_heist() then
-      return equipped_melee_weapon_original(self, ...)
-    end
-    self._random_melee = self._random_melee or Randomizer:get_random_melee()
-    return self._random_melee.id
-  end
-  
 end
