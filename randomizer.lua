@@ -19,8 +19,9 @@ function Randomizer:load()
   end
 end
 
-function Randomizer:in_heist()
-  return managers and managers.player and managers.player:player_unit()
+function Randomizer:allow_randomizing()
+  local in_heist = managers and managers.player and managers.player:player_unit()
+  return in_heist
 end
 
 function Randomizer:chk_setup_weapons()
@@ -59,51 +60,57 @@ function Randomizer:chk_setup_melees()
     self.melees = {}
     for melee_weapon, data in pairs(tweak_data.blackmarket.melee_weapons) do
       if not data.dlc or managers.dlc:is_dlc_unlocked(data.dlc) then
-        table.insert(self.melees, { id = melee_weapon })
+        table.insert(self.melees, melee_weapon)
       end
     end
   end
 end
 
-function Randomizer:build_random_weapon(selection_index)
+function Randomizer:get_random_weapon(selection_index)
   self:chk_setup_weapons()
-  local data = self.weapons[selection_index][math.random(#self.weapons[selection_index])]
-  data.blueprint = {}
-  local has_part_of_type = {}
-  local is_forbidden = {}
-  local parts = deep_clone(tweak_data.weapon.factory[data.factory_id].uses_parts)
-  local optional_parts = {}
-  for _, part in ipairs(tweak_data.weapon.factory[data.factory_id].optional_parts or {}) do
-    optional_parts[part] = true
-  end
-  while #parts > 0 do
-    local index = math.random(#parts)
-    local part_name = parts[index]
-    local part = tweak_data.weapon.factory.parts[part_name]
-    if part and not part.unatainable and not has_part_of_type[part.type] and not is_forbidden[part_name] and (not part.dlc or managers.dlc:is_dlc_unlocked(part.dlc)) then
-      local skip_chance = math.random()
-      local skip_part_type = part.type == "custom" and skip_chance <= 0.7 or part.type == "ammo" and skip_chance <= 0.4 or optional_parts[part.type] and skip_chance <= 0.2
-      if not skip_part_type then
-        table.insert(data.blueprint, part_name)
-        for _, p in ipairs(part.forbids or {}) do
-          is_forbidden[p] = true
-        end
-      end
-      has_part_of_type[part.type] = true
+  self._random_weapon = self._random_weapon or {}
+  if not self._random_weapon[selection_index] then
+    local data = self.weapons[selection_index][math.random(#self.weapons[selection_index])]
+    data.blueprint = {}
+    local has_part_of_type = {}
+    local is_forbidden = {}
+    local parts = deep_clone(tweak_data.weapon.factory[data.factory_id].uses_parts)
+    local optional_parts = {}
+    for _, part in ipairs(tweak_data.weapon.factory[data.factory_id].optional_parts or {}) do
+      optional_parts[part] = true
     end
-    table.remove(parts, index)
+    while #parts > 0 do
+      local index = math.random(#parts)
+      local part_name = parts[index]
+      local part = tweak_data.weapon.factory.parts[part_name]
+      if part and not part.unatainable and not has_part_of_type[part.type] and not is_forbidden[part_name] and (not part.dlc or managers.dlc:is_dlc_unlocked(part.dlc)) then
+        local skip_chance = math.random()
+        local skip_part_type = part.type == "custom" and skip_chance <= 0.7 or part.type == "ammo" and skip_chance <= 0.4 or optional_parts[part.type] and skip_chance <= 0.2
+        if not skip_part_type then
+          table.insert(data.blueprint, part_name)
+          for _, p in ipairs(part.forbids or {}) do
+            is_forbidden[p] = true
+          end
+        end
+        has_part_of_type[part.type] = true
+      end
+      table.remove(parts, index)
+    end
+    self._random_weapon[selection_index] = data
   end
-  return data
+  return self._random_weapon[selection_index]
 end
 
 function Randomizer:get_random_grenade()
   self:chk_setup_grenades()
-  return Randomizer.grenades[math.random(#Randomizer.grenades)]
+  self._random_grenade = self._random_grenade or self.grenades[math.random(#self.grenades)]
+  return self._random_grenade.id, self._random_grenade.amount
 end
 
 function Randomizer:get_random_melee()
   self:chk_setup_melees()
-  return Randomizer.melees[math.random(#Randomizer.melees)]
+  self._random_melee = self._random_melee or self.melees[math.random(#self.melees)]
+  return self._random_melee
 end
 
 ------------------------ MOD STUFF ------------------------
@@ -111,40 +118,36 @@ if RequiredScript == "lib/managers/blackmarketmanager" then
   
   local equipped_primary_original = BlackMarketManager.equipped_primary
   function BlackMarketManager:equipped_primary(...)
-    if not Randomizer.data.random_primary or not Randomizer:in_heist() then
+    if not Randomizer.data.random_primary or not Randomizer:allow_randomizing() then
       return equipped_primary_original(self, ...)
     end
-    self._random_primary = self._random_primary or Randomizer:build_random_weapon(2)
-    return self._random_primary
+    return Randomizer:get_random_weapon(2)
   end
 
   local equipped_secondary_original = BlackMarketManager.equipped_secondary
   function BlackMarketManager:equipped_secondary(...)
-    if not Randomizer.data.random_secondary or not Randomizer:in_heist() then
+    if not Randomizer.data.random_secondary or not Randomizer:allow_randomizing() then
       return equipped_secondary_original(self, ...)
     end
-    self._random_secondary = self._random_secondary or Randomizer:build_random_weapon(1)
-    return self._random_secondary
+    return Randomizer:get_random_weapon(1)
   end
 
   local equipped_grenade_original = BlackMarketManager.equipped_grenade
   function BlackMarketManager:equipped_grenade(...)
-    if not Randomizer.data.random_grenade or not Randomizer:in_heist() then
+    --if not Randomizer.data.random_grenade or not Randomizer:allow_randomizing() then
       return equipped_grenade_original(self, ...)
-    end
-    self._original_grenade = equipped_grenade_original(self, ...)
-    self._random_grenade = self._random_grenade or Randomizer:get_random_grenade()
-    return self._random_grenade.id, self._random_grenade.amount
+    --end
+    --self._original_grenade = self._original_grenade or equipped_grenade_original(self, ...)
+    --return Randomizer:get_random_grenade()
   end
-  
+
   local equipped_melee_weapon_original = BlackMarketManager.equipped_melee_weapon
   function BlackMarketManager:equipped_melee_weapon(...)
-    if not Randomizer.data.random_melee or not Randomizer:in_heist() then
+    --if not Randomizer.data.random_melee or not Randomizer:allow_randomizing() then
       return equipped_melee_weapon_original(self, ...)
-    end
-    self._original_melee = equipped_melee_weapon_original(self, ...)
-    self._random_melee = self._random_melee or Randomizer:get_random_melee()
-    return self._random_melee.id
+    --end
+    --self._original_melee = self._original_melee or equipped_melee_weapon_original(self, ...)
+    --return Randomizer:get_random_melee()
   end
   
   local save_original = BlackMarketManager.save
@@ -209,6 +212,7 @@ if RequiredScript == "lib/managers/menumanager" then
       callback = "Randomizer_toggle",
       value = Randomizer.data.random_melee,
       menu_id = menu_id_main,
+      disabled = true,
       priority = 98
     })
     MenuHelper:AddToggle({
@@ -218,6 +222,7 @@ if RequiredScript == "lib/managers/menumanager" then
       callback = "Randomizer_toggle",
       value = Randomizer.data.random_grenade,
       menu_id = menu_id_main,
+      disabled = true,
       priority = 97
     })
     
