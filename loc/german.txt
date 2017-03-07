@@ -1,0 +1,8 @@
+{
+  "Randomizer_menu_main_name" : "Player Randomizer",
+  "Randomizer_menu_main_desc" : "Lasse deine Ausrüstung zu Beginn des Spiels zufällig gewählt werden",
+  "primary_desc" : "Zufällig gewählte Primärwaffe",
+  "secondary_desc" : "Zufällig gewählte Sekundärwaffe",
+  "melee_desc" : "Zufällig gewählte Nahkampfwaffe",
+  "grenade_desc" : "Zufällig gewählte Wurfwaffe"
+}
