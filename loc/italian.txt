@@ -1,0 +1,8 @@
+{
+  "Randomizer_menu_main_name" : "Player Randomizer",
+  "Randomizer_menu_main_desc" : "Rendi casuale il tuo equipaggiamento all'inizio del colpo",
+  "primary_desc" : "Rendi casuale la tua arma primaria",
+  "secondary_desc" : "Rendi casuale la tua arma secondaria",
+  "melee_desc" : "Rendi casuale la tua arma corpo a corpo",
+  "grenade_desc" : "Rendi casuali le armi da lancio"
+}
