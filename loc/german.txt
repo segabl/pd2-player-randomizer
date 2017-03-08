@@ -1,8 +1,12 @@
 {
   "Randomizer_menu_main_name" : "Player Randomizer",
   "Randomizer_menu_main_desc" : "Lasse deine Ausrüstung zu Beginn des Spiels zufällig gewählt werden",
+  "hide_selections_name" : "Zufällig gewählte Auswahl verbergen"
+  "hide_selections_desc" : "Verbirgt zufällig gewählte Auswahl im Ausrüstungsbildschirm"
   "primary_desc" : "Zufällig gewählte Primärwaffe",
   "secondary_desc" : "Zufällig gewählte Sekundärwaffe",
   "melee_desc" : "Zufällig gewählte Nahkampfwaffe",
-  "grenade_desc" : "Zufällig gewählte Wurfwaffe"
+  "grenade_desc" : "Zufällig gewählte Wurfwaffe",
+  "armor_desc" : "Zufällig gewählte Panzerung",
+  "deployable_desc" : "Zufällig gewählte Ausrüstung"
 }

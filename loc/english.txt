@@ -1,8 +1,12 @@
 {
   "Randomizer_menu_main_name" : "Player Randomizer",
   "Randomizer_menu_main_desc" : "Randomize your equipment on heist start",
+  "hide_selections_name" : "Hide randomized selections"
+  "hide_selections_desc" : "Hides randomized selections in loadout screen"
   "primary_desc" : "Randomize your primary weapon",
   "secondary_desc" : "Randomize your secondary weapon",
   "melee_desc" : "Randomize your melee weapon",
-  "grenade_desc" : "Randomize your throwable"
+  "grenade_desc" : "Randomize your throwable",
+  "armor_desc" : "Randomize your armor",
+  "deployable_desc" : "Randomize your deployable"
 }
