@@ -53,7 +53,9 @@ function Randomizer:chk_setup_weapons()
           local data = {
             selection_index = selection_index,
             weapon_id = weapon,
-            factory_id = managers.weapon_factory:get_factory_id_by_weapon_id(weapon)
+            factory_id = managers.weapon_factory:get_factory_id_by_weapon_id(weapon),
+            global_value = {},
+            equipped = true
           }
           table.insert(self.weapons[selection_index], data)
         end
@@ -104,7 +106,7 @@ function Randomizer:chk_setup_grenades()
       if data.throwable or data.ability then
         local unlocked = Global.blackmarket_manager.grenades[grenade_id].unlocked and (not data.dlc or managers.dlc:is_dlc_unlocked(data.dlc))
         if unlocked then
-          table.insert(self.grenades, { id = grenade_id, amount = data.max_amount })
+          table.insert(self.grenades, grenade_id)
         end
       end
     end
@@ -114,7 +116,7 @@ end
 function Randomizer:get_random_grenade()
   self:chk_setup_grenades()
   self._random_grenade = self._random_grenade or self.grenades[math.random(#self.grenades)]
-  return self._random_grenade.id, self._random_grenade.amount
+  return self._random_grenade
 end
 
 function Randomizer:chk_setup_melees()
@@ -231,6 +233,7 @@ if RequiredScript == "lib/managers/blackmarketmanager" then
   
 end
 
+--------------------------- GUI STUFF --------------------------
 if RequiredScript == "lib/managers/menu/missionbriefinggui" then
 
   local init_loadout_tab_original = NewLoadoutTab.init
@@ -257,7 +260,7 @@ if RequiredScript == "lib/managers/menu/missionbriefinggui" then
           vertical = "center",
           color = Color.black
         })
-        questionmark:set_center(self._item_panel:center_x(), self._item_panel:center_y())
+        questionmark:set_center(self._item_panel:center_x(), self._item_panel:center_y() + 8)
       end
       if self._item_image then
         self._item_image:set_color(Color.black:with_alpha(Randomizer.data.hide_selections and 0 or 1))
