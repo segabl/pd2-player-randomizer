@@ -54,7 +54,6 @@ function Randomizer:chk_setup_weapons()
             selection_index = selection_index,
             weapon_id = weapon,
             factory_id = managers.weapon_factory:get_factory_id_by_weapon_id(weapon),
-            global_value = {},
             equipped = true
           }
           table.insert(self.weapons[selection_index], data)
