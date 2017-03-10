@@ -46,7 +46,7 @@ function Randomizer:chk_setup_weapons()
     self.weapons = {}
     for weapon, data in pairs(tweak_data.weapon) do
       if data.autohit then
-        local unlocked = Global.blackmarket_manager.weapons[weapon].unlocked and (not data.global_value or managers.dlc:is_dlc_unlocked(data.global_value))
+        local unlocked = managers.blackmarket:weapon_unlocked(weapon) and (not data.global_value or managers.dlc:is_dlc_unlocked(data.global_value))
         if unlocked then
           local selection_index = data.use_data.selection_index
           self.weapons[selection_index] = self.weapons[selection_index] or {}
@@ -97,6 +97,31 @@ function Randomizer:get_random_weapon(selection_index)
     self._random_weapon[selection_index] = data
   end
   return self._random_weapon[selection_index]
+end
+
+function Randomizer:chk_setup_weapons_owned()
+  if not self.weapons_owned then
+    self.weapons_owned = { {}, {} }
+    for slot, data in pairs(Global.blackmarket_manager.crafted_items["primaries"]) do
+      local unlocked = managers.blackmarket:weapon_unlocked_by_crafted("primaries", slot)
+      if unlocked then
+        table.insert(self.weapons_owned[2], data)
+      end
+    end
+    for slot, data in pairs(Global.blackmarket_manager.crafted_items["secondaries"]) do
+      local unlocked = managers.blackmarket:weapon_unlocked_by_crafted("secondaries", slot)
+      if unlocked then
+        table.insert(self.weapons_owned[1], data)
+      end
+    end
+  end
+end
+
+function Randomizer:get_random_weapon_owned(selection_index)
+  self:chk_setup_weapons_owned()
+  self._random_weapon_owned = self._random_weapon_owned or {}
+  self._random_weapon_owned[selection_index] = self._random_weapon_owned[selection_index] or self.weapons_owned[selection_index][math.random(#self.weapons_owned[selection_index])]
+  return self._random_weapon_owned[selection_index]
 end
 
 function Randomizer:chk_setup_grenades()
@@ -180,7 +205,7 @@ if RequiredScript == "lib/managers/blackmarketmanager" then
     if not Randomizer.data.random_primary or not Randomizer:allow_randomizing() then
       return forced_primary_original(self, ...)
     end
-    return Randomizer:get_random_weapon(2)
+    return Randomizer.data.only_owned_weapons and Randomizer:get_random_weapon_owned(2) or Randomizer:get_random_weapon(2)
   end
 
   local forced_secondary_original = BlackMarketManager.forced_secondary
@@ -188,7 +213,7 @@ if RequiredScript == "lib/managers/blackmarketmanager" then
     if not Randomizer.data.random_secondary or not Randomizer:allow_randomizing() then
       return forced_secondary_original(self, ...)
     end
-    return Randomizer:get_random_weapon(1)
+    return Randomizer.data.only_owned_weapons and Randomizer:get_random_weapon_owned(1) or Randomizer:get_random_weapon(1)
   end
 
   local forced_throwable_original = BlackMarketManager.forced_throwable
@@ -341,6 +366,15 @@ if RequiredScript == "lib/managers/menumanager" then
       desc = "hide_selections_desc",
       callback = "Randomizer_toggle",
       value = Randomizer.data.hide_selections,
+      menu_id = menu_id_main,
+      priority = 12
+    })
+    MenuHelper:AddToggle({
+      id = "only_owned_weapons",
+      title = "only_owned_weapons_name",
+      desc = "only_owned_weapons_desc",
+      callback = "Randomizer_toggle",
+      value = Randomizer.data.only_owned_weapons,
       menu_id = menu_id_main,
       priority = 11
     })

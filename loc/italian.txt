@@ -1,8 +1,8 @@
 {
   "Randomizer_menu_main_name" : "Player Randomizer",
   "Randomizer_menu_main_desc" : "Rendi casuale il tuo equipaggiamento all'inizio del colpo",
-  "hide_selections_name" : "Nascondi le scelte casuali"
-  "hide_selections_desc" : "Nascondi le scelte casuali nella schermata di preparazione"
+  "hide_selections_name" : "Nascondi le scelte casuali",
+  "hide_selections_desc" : "Nascondi le scelte casuali nella schermata di preparazione",
   "primary_desc" : "Rendi casuale la tua arma primaria",
   "secondary_desc" : "Rendi casuale la tua arma secondaria",
   "melee_desc" : "Rendi casuale la tua arma corpo a corpo",
