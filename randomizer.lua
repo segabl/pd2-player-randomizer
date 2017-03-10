@@ -44,6 +44,7 @@ end
 function Randomizer:update_outfit()
   if managers.network and managers.network:session() and managers.network:session():local_peer() then
     managers.network:session():local_peer():set_outfit_string(managers.blackmarket:outfit_string())
+    managers.network:session():local_peer():set_character(managers.blackmarket:equipped_character())
   end
 end
 
@@ -78,17 +79,18 @@ function Randomizer:get_random_weapon(selection_index)
     local has_part_of_type = {}
     local is_forbidden = {}
     local parts = deep_clone(tweak_data.weapon.factory[data.factory_id].uses_parts)
-    local optional_parts = {}
-    for _, part in ipairs(tweak_data.weapon.factory[data.factory_id].optional_parts or {}) do
-      optional_parts[part] = true
-    end
+    local must_use = {}
+    for _, part_name in ipairs(tweak_data.weapon.factory[data.factory_id].default_blueprint) do
+      local part_type = tweak_data.weapon.factory.parts[part_name].type
+      must_use[part_type] = true
+    end   
     while #parts > 0 do
       local index = math.random(#parts)
       local part_name = parts[index]
       local part = tweak_data.weapon.factory.parts[part_name]
       if part and not part.unatainable and not has_part_of_type[part.type] and not is_forbidden[part_name] and (not part.dlc or managers.dlc:is_dlc_unlocked(part.dlc)) then
-        local skip_chance = math.random()
-        local skip_part_type = part.type == "custom" and skip_chance <= 0.7 or part.type == "ammo" and skip_chance <= 0.4 or optional_parts[part.type] and skip_chance <= 0.2
+        local skip_chance = not must_use[part.type] and math.random() or 100
+        local skip_part_type = part.type == "custom" and skip_chance <= 0.7 or part.type == "ammo" and skip_chance <= 0.4 or skip_chance <= 0.2
         if not skip_part_type then
           table.insert(data.blueprint, part_name)
           for _, p in ipairs(part.forbids or {}) do
@@ -202,6 +204,41 @@ function Randomizer:get_random_deployable()
   return self._random_deployable
 end
 
+function Randomizer:chk_setup_characters()
+  if not self.characters then
+    self.characters = {}
+    local in_use = {}
+    for peer_id, peer in ipairs(managers.network and managers.network:session() and managers.network:session():all_peers() or {}) do
+      if peer_id ~= managers.network:session():local_peer():id() then
+        in_use[peer:character()] = true
+      end
+    end
+    for character, data in pairs(tweak_data.blackmarket.characters) do
+      if character ~= "locked" then
+        local unlocked = not data.dlc or managers.dlc:is_dlc_unlocked(data.dlc)
+        if data.fps_unit and unlocked and not in_use[character] then
+          table.insert(self.characters, character)
+        end
+      else
+        for locked_character, locked_data in pairs(data) do
+          if type(locked_data) == "table" then
+            local unlocked = not locked_data.dlc or managers.dlc:is_dlc_unlocked(locked_data.dlc)
+            if unlocked and not in_use[character] then
+              table.insert(self.characters, locked_character)
+            end
+          end
+        end
+      end
+    end
+  end
+end
+
+function Randomizer:get_random_character()
+  self:chk_setup_characters()
+  self._random_character = self._random_character or self.characters[math.random(#self.characters)]
+  return self._random_character
+end
+
 ------------------------ MOD STUFF ------------------------
 if RequiredScript == "lib/managers/blackmarketmanager" then
   
@@ -259,6 +296,14 @@ if RequiredScript == "lib/managers/blackmarketmanager" then
       return forced_deployable_original(self, ...)
     end
     return Randomizer:get_random_deployable()
+  end
+  
+  local forced_character_original = BlackMarketManager.forced_character
+  function BlackMarketManager:forced_character(...)
+    if not Randomizer.data.random_character or not Randomizer:allow_randomizing() then
+      return forced_character_original(self, ...)
+    end
+    return Randomizer:get_random_character()
   end
   
 end
@@ -397,6 +442,15 @@ if RequiredScript == "lib/managers/menumanager" then
       size = 24,
       menu_id = menu_id_main,
       priority = 10
+    })
+    MenuHelper:AddToggle({
+      id = "random_character",
+      title = "bm_menu_characters",
+      desc = "character_desc",
+      callback = "Randomizer_toggle",
+      value = Randomizer.data.random_character,
+      menu_id = menu_id_main,
+      priority = 7
     })
     MenuHelper:AddToggle({
       id = "random_primary",

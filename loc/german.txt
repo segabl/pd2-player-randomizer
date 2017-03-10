@@ -5,6 +5,7 @@
   "hide_selections_desc" : "Verbirgt zufällig gewählte Auswahl im Ausrüstungsbildschirm",
   "only_owned_weapons_name" : "Nur Waffen aus Inventar",
   "only_owned_weapons_desc" : "Der Randomizer wird nur Waffen aus deinem Inventar wählen",
+  "character_desc" : "Zufällig gewählter Charakter",
   "primary_desc" : "Zufällig gewählte Primärwaffe",
   "secondary_desc" : "Zufällig gewählte Sekundärwaffe",
   "melee_desc" : "Zufällig gewählte Nahkampfwaffe",

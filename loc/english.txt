@@ -5,6 +5,7 @@
   "hide_selections_desc" : "Hides randomized selections in loadout screen",
   "only_owned_weapons_name" : "Only inventory weapons",
   "only_owned_weapons_desc" : "Randomizer will only choose weapons from your inventory",
+  "character_desc" : "Randomize your character",
   "primary_desc" : "Randomize your primary weapon",
   "secondary_desc" : "Randomize your secondary weapon",
   "melee_desc" : "Randomize your melee weapon",
