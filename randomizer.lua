@@ -41,6 +41,12 @@ function Randomizer:get_loadout_item_index()
   return self._loadout_item_index
 end
 
+function Randomizer:update_outfit()
+  if managers.network and managers.network:session() and managers.network:session():local_peer() then
+    managers.network:session():local_peer():set_outfit_string(managers.blackmarket:outfit_string())
+  end
+end
+
 function Randomizer:chk_setup_weapons()
   if not self.weapons then
     self.weapons = {}
@@ -260,6 +266,12 @@ end
 --------------------------- GUI STUFF --------------------------
 if RequiredScript == "lib/managers/menu/missionbriefinggui" then
 
+  local init_mission_briefing_gui_original = MissionBriefingGui.init
+  function MissionBriefingGui:init(...)
+    init_mission_briefing_gui_original(self, ...)
+    Randomizer:update_outfit()
+  end
+
   local init_loadout_tab_original = NewLoadoutTab.init
   function NewLoadoutTab:init(...)
     init_loadout_tab_original(self, ...)
@@ -310,7 +322,7 @@ if RequiredScript == "lib/managers/menu/missionbriefinggui" then
   local set_slot_outfit_original = TeamLoadoutItem.set_slot_outfit
   function TeamLoadoutItem:set_slot_outfit(slot, criminal_name, outfit, ...)
     local peer_id = managers.network and managers.network:session() and managers.network:session():local_peer():id() or 1
-    if slot ~= peer_id or not Randomizer.data.hide_selections or not outfit then
+    if slot ~= peer_id or not outfit or not Randomizer.data.hide_selections then
       return set_slot_outfit_original(self, slot, criminal_name, outfit, ...)
     end
     local new_outfit = deep_clone(outfit)
@@ -358,6 +370,7 @@ if RequiredScript == "lib/managers/menumanager" then
     
     MenuCallbackHandler.Randomizer_toggle = function(self, item)
       Randomizer.data[item:name()] = (item:value() == "on");
+      Randomizer:update_outfit()
       Randomizer:save()
     end
 
