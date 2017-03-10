@@ -309,7 +309,8 @@ if RequiredScript == "lib/managers/menu/missionbriefinggui" then
   
   local set_slot_outfit_original = TeamLoadoutItem.set_slot_outfit
   function TeamLoadoutItem:set_slot_outfit(slot, criminal_name, outfit, ...)
-    if slot ~= 1 or not Randomizer.data.hide_selections or not outfit then
+    local peer_id = managers.network and managers.network:session() and managers.network:session():local_peer():id() or 1
+    if slot ~= peer_id or not Randomizer.data.hide_selections or not outfit then
       return set_slot_outfit_original(self, slot, criminal_name, outfit, ...)
     end
     outfit.primary.factory_id = not Randomizer.data.random_primary and outfit.primary.factory_id
