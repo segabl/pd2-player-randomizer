@@ -313,13 +313,14 @@ if RequiredScript == "lib/managers/menu/missionbriefinggui" then
     if slot ~= peer_id or not Randomizer.data.hide_selections or not outfit then
       return set_slot_outfit_original(self, slot, criminal_name, outfit, ...)
     end
-    outfit.primary.factory_id = not Randomizer.data.random_primary and outfit.primary.factory_id
-    outfit.secondary.factory_id = not Randomizer.data.random_secondary and outfit.secondary.factory_id
-    outfit.melee_weapon = not Randomizer.data.random_melee and outfit.melee_weapon
-    outfit.grenade = not Randomizer.data.random_grenade and outfit.grenade
-    outfit.armor = not Randomizer.data.random_armor and outfit.armor
-    outfit.deployable = not Randomizer.data.random_deployable and outfit.deployable
-    return set_slot_outfit_original(self, slot, criminal_name, outfit, ...)
+    local new_outfit = deep_clone(outfit)
+    new_outfit.primary.factory_id = not Randomizer.data.random_primary and new_outfit.primary.factory_id
+    new_outfit.secondary.factory_id = not Randomizer.data.random_secondary and new_outfit.secondary.factory_id
+    new_outfit.melee_weapon = not Randomizer.data.random_melee and new_outfit.melee_weapon
+    new_outfit.grenade = not Randomizer.data.random_grenade and new_outfit.grenade
+    new_outfit.armor = not Randomizer.data.random_armor and new_outfit.armor
+    new_outfit.deployable = not Randomizer.data.random_deployable and new_outfit.deployable
+    return set_slot_outfit_original(self, slot, criminal_name, new_outfit, ...)
   end
   
   local confirm_pressed_original = NewLoadoutTab.confirm_pressed
