@@ -44,7 +44,9 @@ end
 function Randomizer:update_outfit()
   if managers.network and managers.network:session() and managers.network:session():local_peer() then
     managers.network:session():local_peer():set_outfit_string(managers.blackmarket:outfit_string())
-    managers.network:session():local_peer():set_character(managers.blackmarket:equipped_character())
+    if Randomizer.data.random_character then
+      managers.network:session():local_peer():set_character(managers.blackmarket:equipped_character())
+    end
   end
 end
 
