@@ -1,6 +1,8 @@
 {
   "Randomizer_menu_main_name" : "Player Randomizer",
   "Randomizer_menu_main_desc" : "Lasse deine Ausrüstung zu Beginn des Spiels zufällig gewählt werden",
+  "enabled_name" : "Aktiviert",
+  "enabled_desc" : "Schalte den Randomizer ein oder aus",
   "hide_selections_name" : "Zufällig gewählte Auswahl verbergen",
   "hide_selections_desc" : "Verbirgt zufällig gewählte Auswahl im Ausrüstungsbildschirm",
   "only_owned_weapons_name" : "Nur Waffen aus Inventar",

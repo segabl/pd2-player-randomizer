@@ -1,6 +1,8 @@
 {
   "Randomizer_menu_main_name" : "Player Randomizer",
   "Randomizer_menu_main_desc" : "Randomize your equipment on heist start",
+  "enabled_name" : "Enabled",
+  "enabled_desc" : "Toggle the Randomizer on or off",
   "hide_selections_name" : "Hide randomized selections",
   "hide_selections_desc" : "Hides randomized selections in loadout screen",
   "only_owned_weapons_name" : "Only inventory weapons",

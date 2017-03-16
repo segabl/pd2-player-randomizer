@@ -20,7 +20,7 @@ function Randomizer:load()
 end
 
 function Randomizer:allow_randomizing()
-  return Utils:IsInGameState()
+  return self.data.enabled and Utils:IsInGameState()
 end
 
 function Randomizer:is_randomized(selection)
@@ -423,6 +423,21 @@ if RequiredScript == "lib/managers/menumanager" then
     end
 
     MenuHelper:AddToggle({
+      id = "enabled",
+      title = "enabled_name",
+      desc = "enabled_desc",
+      callback = "Randomizer_toggle",
+      value = Randomizer.data.enabled,
+      menu_id = menu_id_main,
+      priority = 14
+    })
+    MenuHelper:AddDivider({
+      id = "divider",
+      size = 24,
+      menu_id = menu_id_main,
+      priority = 13
+    })
+    MenuHelper:AddToggle({
       id = "hide_selections",
       title = "hide_selections_name",
       desc = "hide_selections_desc",
@@ -441,7 +456,7 @@ if RequiredScript == "lib/managers/menumanager" then
       priority = 11
     })
     MenuHelper:AddDivider({
-      id = "divider",
+      id = "divider2",
       size = 24,
       menu_id = menu_id_main,
       priority = 10
