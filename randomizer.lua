@@ -32,7 +32,7 @@ function Randomizer:is_randomized(selection)
     [5] = self.data.random_armor,
     [6] = self.data.random_deployable
   }
-  return mapping[selection]
+  return mapping[selection] and Randomizer:allow_randomizing()
 end
 
 function Randomizer:get_loadout_item_index()
@@ -374,12 +374,12 @@ if RequiredScript == "lib/managers/menu/missionbriefinggui" then
       return set_slot_outfit_original(self, slot, criminal_name, outfit, ...)
     end
     local new_outfit = deep_clone(outfit)
-    new_outfit.primary.factory_id = not Randomizer.data.random_primary and new_outfit.primary.factory_id
-    new_outfit.secondary.factory_id = not Randomizer.data.random_secondary and new_outfit.secondary.factory_id
-    new_outfit.melee_weapon = not Randomizer.data.random_melee and new_outfit.melee_weapon
-    new_outfit.grenade = not Randomizer.data.random_grenade and new_outfit.grenade
-    new_outfit.armor = not Randomizer.data.random_armor and new_outfit.armor
-    new_outfit.deployable = not Randomizer.data.random_deployable and new_outfit.deployable
+    new_outfit.primary.factory_id = not (Randomizer.data.random_primary and Randomizer:allow_randomizing()) and new_outfit.primary.factory_id
+    new_outfit.secondary.factory_id = not (Randomizer.data.random_secondary and Randomizer:allow_randomizing()) and new_outfit.secondary.factory_id
+    new_outfit.melee_weapon = not (Randomizer.data.random_melee and Randomizer:allow_randomizing()) and new_outfit.melee_weapon
+    new_outfit.grenade = not (Randomizer.data.random_grenade and Randomizer:allow_randomizing()) and new_outfit.grenade
+    new_outfit.armor = not (Randomizer.data.random_armor and Randomizer:allow_randomizing()) and new_outfit.armor
+    new_outfit.deployable = not (Randomizer.data.random_deployable and Randomizer:allow_randomizing()) and new_outfit.deployable
     return set_slot_outfit_original(self, slot, criminal_name, new_outfit, ...)
   end
   
