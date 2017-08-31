@@ -1,7 +1,10 @@
 {
   "name" : "Player Randomizer",
-  "description" : "Randomizes the players guns",
-  "author" : "Nebby",
+  "description" : "Randomizes the players weapons, armor and equipment",
+  "author" : "Shiny Hoppip",
+  "blt_version" : 2,
+  "color" : "0.043 0.808 0.6",
+  "image" : "mod.png",
   "updates" : [
     {
       "revision" : 16,

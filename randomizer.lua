@@ -476,7 +476,7 @@ if RequiredScript == "lib/managers/menumanager" then
 
   Hooks:Add("MenuManagerBuildCustomMenus", "MenuManagerBuildCustomMenusPlayerRandomizer", function(menu_manager, nodes)
     nodes[menu_id_main] = MenuHelper:BuildMenu(menu_id_main)
-    MenuHelper:AddMenuItem(MenuHelper:GetMenu("lua_mod_options_menu"), menu_id_main, "Randomizer_menu_main_name", "Randomizer_menu_main_desc")
+    MenuHelper:AddMenuItem(nodes["blt_options"], menu_id_main, "Randomizer_menu_main_name", "Randomizer_menu_main_desc")
   end)
 
 end
