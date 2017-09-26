@@ -74,34 +74,20 @@ function Randomizer:get_random_weapon(selection_index)
   self._random_weapon = self._random_weapon or {}
   if not self._random_weapon[selection_index] then
     local data = self.weapons[selection_index][math.random(#self.weapons[selection_index])]
-    data.blueprint = {}
-    local has_part_of_type = {}
-    local parts = deep_clone(tweak_data.weapon.factory[data.factory_id].uses_parts)
-    local adds = tweak_data.weapon.factory[data.factory_id].adds or {}
-    local must_use = {}
-    for _, part_name in ipairs(tweak_data.weapon.factory[data.factory_id].default_blueprint) do
-      local part_type = tweak_data.weapon.factory.parts[part_name].type
-      must_use[part_type] = true
-    end   
-    while #parts > 0 do
-      local index = math.random(#parts)
-      local part_name = parts[index]
-      local part = tweak_data.weapon.factory.parts[part_name]
-      local is_forbidden = part.unatainable or table.contains(adds, part_name) or managers.weapon_factory:_get_forbidden_parts(data.factory_id, data.blueprint)[part_name] or part.dlc and not managers.dlc:is_dlc_unlocked(part.dlc)
-      if not has_part_of_type[part.type] and not is_forbidden then
-        local skip_chance = not must_use[part.type] and math.random() or 100
-        local skip_part_type = part.type == "custom" and skip_chance <= 0.7 or part.type == "ammo" and skip_chance <= 0.4 or skip_chance <= 0.2
-        if not skip_part_type then
-          table.insert(data.blueprint, part_name)
-          for i, v in ipairs(adds[part_name] or {}) do
-            table.insert(data.blueprint, v)
-            local add_type = tweak_data.weapon.factory.parts[v].type
-            has_part_of_type[add_type] = v
-          end
+    data.blueprint = deep_clone(tweak_data.weapon.factory[data.factory_id].default_blueprint)
+    for part_type, parts in pairs(managers.blackmarket:get_dropable_mods_by_weapon_id(data.weapon_id)) do
+      local skip_chance = math.random()
+      local skip_part_type = part_type == "custom" and skip_chance <= 0.7 or part_type == "ammo" and skip_chance <= 0.4 or skip_chance <= 0.2
+      if not skip_part_type then
+        local filtered_parts = table.filter_list(parts, function (part_id)
+          local part = tweak_data.weapon.factory.parts[part_id[1]]
+          return not managers.weapon_factory:_get_forbidden_parts(data.factory_id, data.blueprint)[part_id[1]] and (not part.dlc or managers.dlc:is_dlc_unlocked(part.dlc))
+        end)
+        local part_id = table.random(filtered_parts)
+        if part_id then
+          managers.weapon_factory:change_part_blueprint_only(data.factory_id, part_id[1], data.blueprint)
         end
-        has_part_of_type[part.type] = part_name
       end
-      table.remove(parts, index)
     end
     self._random_weapon[selection_index] = data
   end
