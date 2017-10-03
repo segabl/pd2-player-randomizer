@@ -2,6 +2,7 @@ _G.Randomizer = Randomizer or {}
 Randomizer.data = Randomizer.data or {}
 Randomizer.save_path = SavePath
 Randomizer.mod_path = ModPath
+Randomizer.menu_id = "PlayerRandomizerMenu"
 
 function Randomizer:save()
   local file = io.open(self.save_path .. "player_randomizer.txt", "w+")
@@ -16,6 +17,12 @@ function Randomizer:load()
   if file then
     self.data = json.decode(file:read("*all"))
     file:close()
+  end
+end
+
+function Randomizer:set_menu_state(enabled)
+  for _, item in pairs(MenuHelper:GetMenu(self.menu_id)._items_list) do
+    item:set_enabled(enabled)
   end
 end
 
@@ -52,14 +59,15 @@ function Randomizer:chk_setup_weapons()
     self.weapons = {}
     for weapon, data in pairs(tweak_data.weapon) do
       if data.autohit then
-        local unlocked = managers.blackmarket:weapon_unlocked(weapon) and (not data.global_value or managers.dlc:is_dlc_unlocked(data.global_value))
+        local factory_id = managers.weapon_factory:get_factory_id_by_weapon_id(weapon)
+        local unlocked = tweak_data.weapon.factory[factory_id] and tweak_data.weapon.factory[factory_id].custom or not data.global_value or managers.dlc:is_dlc_unlocked(data.global_value)
         if unlocked then
           local selection_index = data.use_data.selection_index
           self.weapons[selection_index] = self.weapons[selection_index] or {}
           local data = {
             selection_index = selection_index,
             weapon_id = weapon,
-            factory_id = managers.weapon_factory:get_factory_id_by_weapon_id(weapon),
+            factory_id = factory_id,
             equipped = true
           }
           table.insert(self.weapons[selection_index], data)
@@ -191,6 +199,10 @@ function Randomizer:get_random_deployable()
   self._random_deployable = self._random_deployable or self.deployables[math.random(#self.deployables)]
   return self._random_deployable
 end
+
+Hooks:Add("MenuManagerOnOpenMenu", "MenuManagerOnOpenMenuRandomizer", function ()
+  Randomizer:set_menu_state(not Utils:IsInHeist())
+end)
 
 ------------------------ MOD STUFF ------------------------
 if RequiredScript == "lib/managers/blackmarketmanager" then
@@ -349,9 +361,8 @@ if RequiredScript == "lib/managers/menumanager" then
     end
   end)
 
-  local menu_id_main = "PlayerRandomizerMenu"
   Hooks:Add("MenuManagerSetupCustomMenus", "MenuManagerSetupCustomMenusPlayerRandomizer", function(menu_manager, nodes)
-    MenuHelper:NewMenu(menu_id_main)
+    MenuHelper:NewMenu(Randomizer.menu_id)
   end)
 
   Hooks:Add("MenuManagerPopulateCustomMenus", "MenuManagerPopulateCustomMenusPlayerRandomizer", function(menu_manager, nodes)
@@ -370,13 +381,13 @@ if RequiredScript == "lib/managers/menumanager" then
       desc = "enabled_desc",
       callback = "Randomizer_toggle",
       value = Randomizer.data.enabled,
-      menu_id = menu_id_main,
+      menu_id = Randomizer.menu_id,
       priority = 14
     })
     MenuHelper:AddDivider({
       id = "divider",
       size = 24,
-      menu_id = menu_id_main,
+      menu_id = Randomizer.menu_id,
       priority = 13
     })
     MenuHelper:AddToggle({
@@ -385,7 +396,7 @@ if RequiredScript == "lib/managers/menumanager" then
       desc = "hide_selections_desc",
       callback = "Randomizer_toggle",
       value = Randomizer.data.hide_selections,
-      menu_id = menu_id_main,
+      menu_id = Randomizer.menu_id,
       priority = 12
     })
     MenuHelper:AddToggle({
@@ -394,13 +405,13 @@ if RequiredScript == "lib/managers/menumanager" then
       desc = "only_owned_weapons_desc",
       callback = "Randomizer_toggle",
       value = Randomizer.data.only_owned_weapons,
-      menu_id = menu_id_main,
+      menu_id = Randomizer.menu_id,
       priority = 11
     })
     MenuHelper:AddDivider({
       id = "divider2",
       size = 24,
-      menu_id = menu_id_main,
+      menu_id = Randomizer.menu_id,
       priority = 10
     })
     MenuHelper:AddToggle({
@@ -409,7 +420,7 @@ if RequiredScript == "lib/managers/menumanager" then
       desc = "primary_desc",
       callback = "Randomizer_toggle",
       value = Randomizer.data.random_primary,
-      menu_id = menu_id_main,
+      menu_id = Randomizer.menu_id,
       priority = 6
     })
     MenuHelper:AddToggle({
@@ -418,7 +429,7 @@ if RequiredScript == "lib/managers/menumanager" then
       desc = "secondary_desc",
       callback = "Randomizer_toggle",
       value = Randomizer.data.random_secondary,
-      menu_id = menu_id_main,
+      menu_id = Randomizer.menu_id,
       priority = 5
     })
     MenuHelper:AddToggle({
@@ -427,7 +438,7 @@ if RequiredScript == "lib/managers/menumanager" then
       desc = "melee_desc",
       callback = "Randomizer_toggle",
       value = Randomizer.data.random_melee,
-      menu_id = menu_id_main,
+      menu_id = Randomizer.menu_id,
       priority = 4
     })
     MenuHelper:AddToggle({
@@ -436,7 +447,7 @@ if RequiredScript == "lib/managers/menumanager" then
       desc = "grenade_desc",
       callback = "Randomizer_toggle",
       value = Randomizer.data.random_grenade,
-      menu_id = menu_id_main,
+      menu_id = Randomizer.menu_id,
       priority = 3
     })
     MenuHelper:AddToggle({
@@ -445,7 +456,7 @@ if RequiredScript == "lib/managers/menumanager" then
       desc = "armor_desc",
       callback = "Randomizer_toggle",
       value = Randomizer.data.random_armor,
-      menu_id = menu_id_main,
+      menu_id = Randomizer.menu_id,
       priority = 2
     })
     MenuHelper:AddToggle({
@@ -454,15 +465,15 @@ if RequiredScript == "lib/managers/menumanager" then
       desc = "deployable_desc",
       callback = "Randomizer_toggle",
       value = Randomizer.data.random_deployable,
-      menu_id = menu_id_main,
+      menu_id = Randomizer.menu_id,
       priority = 1
     })
     
   end)
 
   Hooks:Add("MenuManagerBuildCustomMenus", "MenuManagerBuildCustomMenusPlayerRandomizer", function(menu_manager, nodes)
-    nodes[menu_id_main] = MenuHelper:BuildMenu(menu_id_main)
-    MenuHelper:AddMenuItem(nodes["blt_options"], menu_id_main, "Randomizer_menu_main_name", "Randomizer_menu_main_desc")
+    nodes[Randomizer.menu_id] = MenuHelper:BuildMenu(Randomizer.menu_id)
+    MenuHelper:AddMenuItem(nodes["blt_options"], Randomizer.menu_id, "Randomizer_menu_main_name", "Randomizer_menu_main_desc")
   end)
 
 end
