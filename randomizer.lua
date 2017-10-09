@@ -3,11 +3,22 @@ Randomizer.data = Randomizer.data or {}
 Randomizer.save_path = SavePath
 Randomizer.mod_path = ModPath
 Randomizer.menu_id = "PlayerRandomizerMenu"
+Randomizer.blacklist = {
+  weapons = {},
+  weapon_types = {},
+  mods = {},
+  mod_types = {}
+}
 
 function Randomizer:save()
   local file = io.open(self.save_path .. "player_randomizer.txt", "w+")
   if file then
     file:write(json.encode(self.data))
+    file:close()
+  end
+  file = io.open(self.save_path .. "player_randomizer_blacklist.txt", "w+")
+  if file then
+    file:write(json.encode(self.blacklist))
     file:close()
   end
 end
@@ -17,6 +28,14 @@ function Randomizer:load()
   if file then
     self.data = json.decode(file:read("*all"))
     file:close()
+    file = io.open(self.save_path .. "player_randomizer_blacklist.txt", "r")
+    if file then
+      local blacklist = json.decode(file:read("*all")) or {}
+      file:close()
+      for k, v in pairs(blacklist) do
+        self.blacklist[k] = v
+      end
+    end
   end
 end
 
@@ -59,9 +78,10 @@ function Randomizer:chk_setup_weapons()
     self.weapons = {}
     for weapon, data in pairs(tweak_data.weapon) do
       if data.autohit then
+        local blacklisted = table.contains(self.blacklist.weapons, weapon) or table.contains(self.blacklist.weapon_types, data.categories[1])
         local factory_id = managers.weapon_factory:get_factory_id_by_weapon_id(weapon)
         local unlocked = tweak_data.weapon.factory[factory_id] and tweak_data.weapon.factory[factory_id].custom or not data.global_value or managers.dlc:is_dlc_unlocked(data.global_value)
-        if unlocked then
+        if not blacklisted and unlocked then
           local selection_index = data.use_data.selection_index
           self.weapons[selection_index] = self.weapons[selection_index] or {}
           local data = {
@@ -84,12 +104,14 @@ function Randomizer:get_random_weapon(selection_index)
     local data = self.weapons[selection_index][math.random(#self.weapons[selection_index])]
     data.blueprint = deep_clone(tweak_data.weapon.factory[data.factory_id].default_blueprint)
     for part_type, parts in pairs(managers.blackmarket:get_dropable_mods_by_weapon_id(data.weapon_id)) do
+      local blacklisted = table.contains(self.blacklist.mod_types, part_type)
       local skip_chance = math.random()
       local skip_part_type = part_type == "custom" and skip_chance <= 0.7 or part_type == "ammo" and skip_chance <= 0.4 or skip_chance <= 0.2
-      if not skip_part_type then
+      if not blacklisted and not skip_part_type then
         local filtered_parts = table.filter_list(parts, function (part_id)
+          local blacklisted = table.contains(self.blacklist.mods, part_id[1])
           local part = tweak_data.weapon.factory.parts[part_id[1]]
-          return not managers.weapon_factory:_get_forbidden_parts(data.factory_id, data.blueprint)[part_id[1]] and (not part.dlc or managers.dlc:is_dlc_unlocked(part.dlc))
+          return not blacklisted and not managers.weapon_factory:_get_forbidden_parts(data.factory_id, data.blueprint)[part_id[1]] and (not part.dlc or managers.dlc:is_dlc_unlocked(part.dlc))
         end)
         local part_id = table.random(filtered_parts)
         if part_id then
