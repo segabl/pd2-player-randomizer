@@ -130,12 +130,14 @@ function Randomizer:chk_setup_weapons_owned()
     for slot, data in pairs(Global.blackmarket_manager.crafted_items["primaries"]) do
       local unlocked = managers.blackmarket:weapon_unlocked_by_crafted("primaries", slot)
       if unlocked then
+        data.slot = slot
         table.insert(self.weapons_owned[2], data)
       end
     end
     for slot, data in pairs(Global.blackmarket_manager.crafted_items["secondaries"]) do
       local unlocked = managers.blackmarket:weapon_unlocked_by_crafted("secondaries", slot)
       if unlocked then
+        data.slot = slot
         table.insert(self.weapons_owned[1], data)
       end
     end
@@ -228,6 +230,33 @@ end)
 
 ------------------------ MOD STUFF ------------------------
 if RequiredScript == "lib/managers/blackmarketmanager" then
+  
+  function BlackMarketManager:get_weapon_name_by_category_slot(category, slot)
+
+    local forced_weapon = category == "primaries" and self:forced_primary() or self:forced_secondary()
+    if forced_weapon then
+      slot = forced_weapon.slot
+      if not slot then
+        return managers.weapon_factory:get_weapon_name_by_factory_id(forced_weapon.factory_id)
+      end
+    end
+
+    local crafted_slot = self:get_crafted_category_slot(category, slot)
+    if crafted_slot then
+      local cosmetics = crafted_slot.cosmetics
+      local cosmetic_name = cosmetics and cosmetics.id and tweak_data.blackmarket.weapon_skins[cosmetics.id] and tweak_data.blackmarket.weapon_skins[cosmetics.id].unique_name_id and managers.localization:text(tweak_data.blackmarket.weapon_skins[cosmetics.id].unique_name_id)
+      local custom_name = cosmetic_name or crafted_slot.custom_name
+      if cosmetic_name and crafted_slot.locked_name then
+        return utf8.to_upper(cosmetic_name)
+      end
+      if custom_name then
+        return "\"" .. custom_name .. "\""
+      end
+      return managers.weapon_factory:get_weapon_name_by_factory_id(crafted_slot.factory_id)
+    end
+    return ""
+  end
+  
   
   local forced_primary_original = BlackMarketManager.forced_primary
   function BlackMarketManager:forced_primary(...)
