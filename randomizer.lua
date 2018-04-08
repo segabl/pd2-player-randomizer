@@ -410,6 +410,9 @@ if RequiredScript == "lib/managers/menumanager" then
         break
       end
     end
+    if PD2KR then
+      loc:load_localization_file(Randomizer.mod_path .. "loc/korean.txt")
+    end
   end)
 
   Hooks:Add("MenuManagerSetupCustomMenus", "MenuManagerSetupCustomMenusPlayerRandomizer", function(menu_manager, nodes)
