@@ -13,5 +13,9 @@
   "melee_desc" : "Randomize your melee weapon",
   "grenade_desc" : "Randomize your throwable",
   "armor_desc" : "Randomize your armor",
-  "deployable_desc" : "Randomize your deployable"
+  "deployable_desc" : "Randomize your deployable",
+  "display_weapon_info_name" : "Display weapon info",
+  "display_weapon_info_desc" : "Bind to show the information about the currently equipped weapon",
+  "weapon_info_string" : "Using $WEAPON with $MODS",
+  "weapon_info_string_default" : "Using $WEAPON with default mods",
 }

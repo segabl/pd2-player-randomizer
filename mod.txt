@@ -5,7 +5,7 @@
   "blt_version" : 2,
   "color" : "0.043 0.808 0.6",
   "image" : "mod.png",
-  "version" : "2.1",
+  "version" : "2.2",
   "updates" : [ { "identifier" : "player_randomizer" } ],
   "hooks" : [
     { "hook_id" : "lib/managers/blackmarketmanager", "script_path" : "randomizer.lua" },

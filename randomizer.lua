@@ -224,6 +224,27 @@ function Randomizer:get_random_deployable()
   return self._random_deployable
 end
 
+function Randomizer:show_weapon_info()
+  local player = managers.player:local_player()
+  local w = player and player:inventory():equipped_unit():base()
+  if not w then
+    return
+  end
+  local w_name = managers.weapon_factory:get_weapon_name_by_weapon_id(w._name_id)
+  local w_blueprint = ""
+  local p_name
+  local has = {}
+  for _, part_id in pairs(w._blueprint) do
+    p_name = managers.weapon_factory:get_part_name_by_part_id(part_id)
+    if p_name and not p_name:match("^ERROR:") and not has[p_name] then
+      has[p_name] = true
+      w_blueprint = w_blueprint .. (w_blueprint == "" and "" or ", ") .. p_name
+    end
+  end
+  local loc_str = w_blueprint == "" and "weapon_info_string_default" or "weapon_info_string"
+  managers.chat:_receive_message(1, "Player Randomizer",  managers.localization:text(loc_str, { WEAPON = w_name, MODS = w_blueprint }), tweak_data.system_chat_color)
+end
+
 Hooks:Add("MenuManagerOnOpenMenu", "MenuManagerOnOpenMenuRandomizer", function ()
   Randomizer:set_menu_state(not Utils:IsInHeist())
 end)
@@ -521,6 +542,32 @@ if RequiredScript == "lib/managers/menumanager" then
       value = Randomizer.data.random_deployable,
       menu_id = Randomizer.menu_id,
       priority = 1
+    })
+    MenuHelper:AddDivider({
+      id = "divider2",
+      size = 24,
+      menu_id = Randomizer.menu_id,
+      priority = 0
+    })
+    local mod = BLT.Mods.GetModOwnerOfFile and BLT.Mods:GetModOwnerOfFile(Randomizer.mod_path) or BLT.Mods.GetMod and BLT.Mods:GetMod("Player Randomizer")
+    if not mod then
+      log("[PlayerRandomizer] ERROR: Could not get mod data, keybinds can not be added!")
+      return
+    end
+    BLT.Keybinds:register_keybind(mod, { id = "display_weapon_info", allow_game = true, show_in_menu = false, callback = function()
+      Randomizer:show_weapon_info()
+    end })
+    local bind = BLT.Keybinds:get_keybind("display_weapon_info")
+    local key = bind and bind:Key() or ""
+    MenuHelper:AddKeybinding({
+      id = "display_weapon_info",
+      title = "display_weapon_info_name",
+      desc= "display_weapon_info_desc",
+      connection_name = "display_weapon_info",
+      binding = key,
+      button = key,
+      menu_id = Randomizer.menu_id,
+      priority = -1
     })
     
   end)

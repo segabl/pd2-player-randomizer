@@ -13,5 +13,9 @@
   "melee_desc" : "Zufällig gewählte Nahkampfwaffe",
   "grenade_desc" : "Zufällig gewählte Wurfwaffe",
   "armor_desc" : "Zufällig gewählte Panzerung",
-  "deployable_desc" : "Zufällig gewählte Ausrüstung"
+  "deployable_desc" : "Zufällig gewählte Ausrüstung",
+  "display_weapon_info_name" : "Waffen Info anzeigen",
+  "display_weapon_info_desc" : "Taste, um Informationen über die momentane Waffe anzuzeigen",
+  "weapon_info_string" : "Benutze $WEAPON mit $MODS",
+  "weapon_info_string_default" : "Benutze $WEAPON mit Standardmods",
 }
