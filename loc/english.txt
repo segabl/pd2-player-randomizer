@@ -17,5 +17,5 @@
   "display_weapon_info_name" : "Display weapon info",
   "display_weapon_info_desc" : "Bind to show the information about the currently equipped weapon",
   "weapon_info_string" : "Using $WEAPON with $MODS",
-  "weapon_info_string_default" : "Using $WEAPON with default mods",
+  "weapon_info_string_default" : "Using $WEAPON with default mods"
 }
