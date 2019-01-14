@@ -102,7 +102,15 @@ function Randomizer:get_random_weapon(selection_index)
   self._random_weapon = self._random_weapon or {}
   if not self._random_weapon[selection_index] then
     local data = self.weapons[selection_index][math.random(#self.weapons[selection_index])]
-    data.blueprint = deep_clone(tweak_data.weapon.factory[data.factory_id].default_blueprint)
+    local inst = math.random() < 0.8 and table.random(managers.blackmarket:get_cosmetics_instances_by_weapon_id(data.weapon_id))
+    local inst_data = inst and managers.blackmarket._global.inventory_tradable[inst]
+    data.cosmetics = inst_data and {
+      bonus = inst_data.bonus,
+      id = inst_data.entry,
+      instance_id = inst,
+      quality = inst_data.quality
+    }
+    data.blueprint = deep_clone(data.cosmetics and tweak_data.blackmarket.weapon_skins[data.cosmetics.id].default_blueprint or tweak_data.weapon.factory[data.factory_id].default_blueprint)
     for part_type, parts in pairs(managers.blackmarket:get_dropable_mods_by_weapon_id(data.weapon_id)) do
       local blacklisted = table.contains(self.blacklist.mod_types, part_type)
       local skip_chance = math.random()
