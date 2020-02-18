@@ -557,7 +557,7 @@ if RequiredScript == "lib/managers/menumanager" then
       menu_id = Randomizer.menu_id,
       priority = 0
     })
-    local mod = BLT.Mods.GetModOwnerOfFile and BLT.Mods:GetModOwnerOfFile(Randomizer.mod_path) or BLT.Mods.GetMod and BLT.Mods:GetMod("Player Randomizer")
+    local mod = BLT.Mods:GetMod(Randomizer.mod_path:gsub(".+/(.+)/$", "%1"))
     if not mod then
       log("[PlayerRandomizer] ERROR: Could not get mod data, keybinds can not be added!")
       return
