@@ -108,7 +108,8 @@ function Randomizer:get_random_weapon(selection_index)
       bonus = inst_data.bonus,
       id = inst_data.entry,
       instance_id = inst,
-      quality = inst_data.quality
+      quality = inst_data.quality,
+      color_index = tweak_data.blackmarket.weapon_skins[inst_data.entry].is_a_color_skin and math.random(#tweak_data.blackmarket.weapon_skins[inst_data.entry])
     }
     data.blueprint = deep_clone(data.cosmetics and tweak_data.blackmarket.weapon_skins[data.cosmetics.id].default_blueprint or tweak_data.weapon.factory[data.factory_id].default_blueprint)
     for part_type, parts in pairs(managers.blackmarket:get_dropable_mods_by_weapon_id(data.weapon_id)) do
