@@ -7,6 +7,8 @@
   "hide_selections_desc" : "Hides randomized selections in loadout screen",
   "only_owned_weapons_name" : "Only inventory weapons",
   "only_owned_weapons_desc" : "Randomizer will only choose weapons from your inventory",
+  "weapon_skin_chance_name" : "Weapon skin chance",
+  "weapon_skin_chance_desc" : "Chance for a weapon skin to be selected by the Randomizer",
   "character_desc" : "Randomize your character",
   "primary_desc" : "Randomize your primary weapon",
   "secondary_desc" : "Randomize your secondary weapon",
@@ -17,5 +19,9 @@
   "display_weapon_info_name" : "Display weapon info",
   "display_weapon_info_desc" : "Keybind to show information about the currently equipped weapon",
   "weapon_info_string" : "Using $WEAPON with $MODS",
-  "weapon_info_string_default" : "Using $WEAPON with default mods"
+  "weapon_info_string_default" : "Using $WEAPON with default mods",
+  "toggle_randomizer_name" : "Toggle Randomizer",
+  "toggle_randomizer_desc" : "Keybind to enable/disable the randomizer",
+  "randomizer_enabled" : "Randomizer enabled",
+  "randomizer_disabled" : "Randomizer disabled"
 }

@@ -1,5 +1,16 @@
 _G.Randomizer = Randomizer or {}
-Randomizer.data = Randomizer.data or {}
+Randomizer.data = Randomizer.data or {
+  enabled = true,
+  hide_selections = true,
+  only_owned_weapons = false,
+  weapon_skin_chance = 0.5,
+  random_primary = true,
+  random_secondary = true,
+  random_melee = true,
+  random_grenade = true,
+  random_armor = true,
+  random_deployable = true
+}
 Randomizer.save_path = SavePath
 Randomizer.mod_path = ModPath
 Randomizer.menu_id = "PlayerRandomizerMenu"
@@ -26,7 +37,10 @@ end
 function Randomizer:load()
   local file = io.open(self.save_path .. "player_randomizer.txt", "r")
   if file then
-    self.data = json.decode(file:read("*all"))
+    local data = json.decode(file:read("*all"))
+    for k, v in pairs(data) do
+      self.data[k] = v
+    end
     file:close()
     file = io.open(self.save_path .. "player_randomizer_blacklist.txt", "r")
     if file then
@@ -41,6 +55,9 @@ end
 
 function Randomizer:set_menu_state(enabled)
   for _, item in pairs(MenuHelper:GetMenu(self.menu_id)._items_list) do
+    if item:name() == "enabled" then
+      item:set_value(self.data.enabled and "on" or "off")
+    end
     item:set_enabled(enabled)
   end
 end
@@ -95,6 +112,15 @@ function Randomizer:chk_setup_weapons()
       end
     end
   end
+  if not self.colors then
+    self.colors = table.filter_list(tweak_data.blackmarket.weapon_colors, function (v)
+      local color_tweak = tweak_data.blackmarket.weapon_skins[v]
+      local dlc = color_tweak.dlc or managers.dlc:global_value_to_dlc(color_tweak.global_value)
+      local unlocked = not dlc or managers.dlc:is_dlc_unlocked(dlc)
+      local have_color = managers.blackmarket:has_item(color_tweak.global_value, "weapon_skins", v)
+      return unlocked and have_color
+    end)
+  end
 end
 
 function Randomizer:get_random_weapon(selection_index)
@@ -102,15 +128,27 @@ function Randomizer:get_random_weapon(selection_index)
   self._random_weapon = self._random_weapon or {}
   if not self._random_weapon[selection_index] then
     local data = self.weapons[selection_index][math.random(#self.weapons[selection_index])]
-    local inst = math.random() < 0.8 and table.random(managers.blackmarket:get_cosmetics_instances_by_weapon_id(data.weapon_id))
-    local inst_data = inst and managers.blackmarket._global.inventory_tradable[inst]
-    data.cosmetics = inst_data and {
-      bonus = inst_data.bonus,
-      id = inst_data.entry,
-      instance_id = inst,
-      quality = inst_data.quality,
-      color_index = tweak_data.blackmarket.weapon_skins[inst_data.entry].is_a_color_skin and math.random(#tweak_data.blackmarket.weapon_skins[inst_data.entry])
-    }
+    if math.random() < self.data.weapon_skin_chance then
+      local skins = managers.blackmarket:get_cosmetics_instances_by_weapon_id(data.weapon_id)
+      if #skins > 0 and math.random(#skins + #self.colors) <= #skins then
+        local inst = table.random(skins)
+        local inst_data = managers.blackmarket._global.inventory_tradable[inst]
+        data.cosmetics = {
+          bonus = inst_data.bonus,
+          id = inst_data.entry,
+          instance_id = inst,
+          quality = inst_data.quality
+        }
+      elseif #self.colors > 0 then
+        local inst = table.random(self.colors)
+        local inst_data = tweak_data.blackmarket.weapon_skins[inst]
+        data.cosmetics = {
+          id = inst,
+          quality = table.random_key(tweak_data.economy.qualities),
+          color_index = math.random(#tweak_data.blackmarket.weapon_skins[inst])
+        }
+      end
+    end
     data.blueprint = deep_clone(data.cosmetics and tweak_data.blackmarket.weapon_skins[data.cosmetics.id].default_blueprint or tweak_data.weapon.factory[data.factory_id].default_blueprint)
     for part_type, parts in pairs(managers.blackmarket:get_dropable_mods_by_weapon_id(data.weapon_id)) do
       local blacklisted = table.contains(self.blacklist.mod_types, part_type)
@@ -454,7 +492,13 @@ if RequiredScript == "lib/managers/menumanager" then
     Randomizer:load()
     
     MenuCallbackHandler.Randomizer_toggle = function(self, item)
-      Randomizer.data[item:name()] = (item:value() == "on");
+      Randomizer.data[item:name()] = (item:value() == "on")
+      Randomizer:update_outfit()
+      Randomizer:save()
+    end
+    
+    MenuCallbackHandler.Randomizer_value = function(self, item)
+      Randomizer.data[item:name()] = item:value()
       Randomizer:update_outfit()
       Randomizer:save()
     end
@@ -466,13 +510,13 @@ if RequiredScript == "lib/managers/menumanager" then
       callback = "Randomizer_toggle",
       value = Randomizer.data.enabled,
       menu_id = Randomizer.menu_id,
-      priority = 14
+      priority = 99
     })
     MenuHelper:AddDivider({
       id = "divider",
       size = 24,
       menu_id = Randomizer.menu_id,
-      priority = 13
+      priority = 98
     })
     MenuHelper:AddToggle({
       id = "hide_selections",
@@ -481,7 +525,7 @@ if RequiredScript == "lib/managers/menumanager" then
       callback = "Randomizer_toggle",
       value = Randomizer.data.hide_selections,
       menu_id = Randomizer.menu_id,
-      priority = 12
+      priority = 97
     })
     MenuHelper:AddToggle({
       id = "only_owned_weapons",
@@ -490,7 +534,20 @@ if RequiredScript == "lib/managers/menumanager" then
       callback = "Randomizer_toggle",
       value = Randomizer.data.only_owned_weapons,
       menu_id = Randomizer.menu_id,
-      priority = 11
+      priority = 96
+    })
+    MenuHelper:AddSlider({
+      id = "weapon_skin_chance",
+      title = "weapon_skin_chance_name",
+      desc = "weapon_skin_chance_desc",
+      callback = "Randomizer_value",
+      value = Randomizer.data.weapon_skin_chance,
+      min = 0,
+      max = 1,
+      step = 0.01,
+      show_value = true,
+      menu_id = Randomizer.menu_id,
+      priority = 95
     })
     MenuHelper:AddDivider({
       id = "divider2",
@@ -577,6 +634,26 @@ if RequiredScript == "lib/managers/menumanager" then
       button = key,
       menu_id = Randomizer.menu_id,
       priority = -1
+    })
+    BLT.Keybinds:register_keybind(mod, { id = "toggle_randomizer", allow_menu = true, show_in_menu = false, callback = function()
+      Randomizer.data.enabled = not Randomizer.data.enabled
+      Randomizer:save()
+      if managers.chat then
+        managers.chat:_receive_message(1, "System", managers.localization:text(Randomizer.data.enabled and "randomizer_enabled" or "randomizer_disabled"), tweak_data.system_chat_color)
+      end
+      Randomizer:set_menu_state(not Utils:IsInHeist())
+    end })
+    bind = BLT.Keybinds:get_keybind("toggle_randomizer")
+    key = bind and bind:Key() or ""
+    MenuHelper:AddKeybinding({
+      id = "toggle_randomizer",
+      title = "toggle_randomizer_name",
+      desc= "toggle_randomizer_desc",
+      connection_name = "toggle_randomizer",
+      binding = key,
+      button = key,
+      menu_id = Randomizer.menu_id,
+      priority = -2
     })
     
   end)

@@ -7,6 +7,8 @@
   "hide_selections_desc" : "Verbirgt zufällig gewählte Auswahl im Ausrüstungsbildschirm",
   "only_owned_weapons_name" : "Nur Waffen aus Inventar",
   "only_owned_weapons_desc" : "Der Randomizer wird nur Waffen aus deinem Inventar wählen",
+  "weapon_skin_chance_name" : "Waffenkosmetik Chance",
+  "weapon_skin_chance_desc" : "Wahrscheinlichkeit, dass Randomizer Waffenkosmetiken auswählt",
   "character_desc" : "Zufällig gewählter Charakter",
   "primary_desc" : "Zufällig gewählte Primärwaffe",
   "secondary_desc" : "Zufällig gewählte Sekundärwaffe",
@@ -15,7 +17,11 @@
   "armor_desc" : "Zufällig gewählte Panzerung",
   "deployable_desc" : "Zufällig gewählte Ausrüstung",
   "display_weapon_info_name" : "Waffen Info anzeigen",
-  "display_weapon_info_desc" : "Taste, um Informationen über die momentane Waffe anzuzeigen",
+  "display_weapon_info_desc" : "Taste um Informationen über die momentane Waffe anzuzeigen",
   "weapon_info_string" : "Benutze $WEAPON mit $MODS",
-  "weapon_info_string_default" : "Benutze $WEAPON mit Standardmods"
+  "weapon_info_string_default" : "Benutze $WEAPON mit Standardmods",
+  "toggle_randomizer_name" : "Randomizer umschalten",
+  "toggle_randomizer_desc" : "Taste um Randomizer ein/auszuschalten",
+  "randomizer_enabled" : "Randomizer aktiviert",
+  "randomizer_disabled" : "Randomizer deaktiviert"
 }
