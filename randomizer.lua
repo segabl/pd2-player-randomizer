@@ -394,21 +394,15 @@ end
 --------------------------- GUI STUFF --------------------------
 if RequiredScript == "lib/managers/menu/missionbriefinggui" then
 
-  local init_mission_briefing_gui_original = MissionBriefingGui.init
-  function MissionBriefingGui:init(...)
-    init_mission_briefing_gui_original(self, ...)
+  Hooks:PostHook(MissionBriefingGui, "init", "init_player_randomizer", function ()
     Randomizer:update_outfit()
-  end
+  end)
 
-  local init_loadout_tab_original = NewLoadoutTab.init
-  function NewLoadoutTab:init(...)
-    init_loadout_tab_original(self, ...)
+  Hooks:PostHook(NewLoadoutTab, "init", "init_player_randomizer", function ()
     Randomizer._loadout_item_index = 0
-  end
+  end)
 
-  local init_loadout_item_original = NewLoadoutItem.init
-  function NewLoadoutItem:init(...)
-    init_loadout_item_original(self, ...)
+  Hooks:PostHook(NewLoadoutItem, "init", "init_player_randomizer", function (self)
     if Randomizer:is_randomized(Randomizer:get_loadout_item_index()) then
       if Randomizer.data.hide_selections then
         if self._info_icon_panel then
@@ -445,7 +439,7 @@ if RequiredScript == "lib/managers/menu/missionbriefinggui" then
       })
       lock:set_center(self._item_panel:center_x(), self._item_panel:center_y())
     end
-  end
+  end)
 
   local set_slot_outfit_original = TeamLoadoutItem.set_slot_outfit
   function TeamLoadoutItem:set_slot_outfit(slot, criminal_name, outfit, ...)
