@@ -631,8 +631,12 @@ if RequiredScript == "lib/managers/menumanager" then
       menu_id = Randomizer.menu_id,
       priority = -1
     })
-    BLT.Keybinds:register_keybind(Randomizer.mod_instance, { id = "toggle_randomizer", allow_menu = true, show_in_menu = false, callback = function()
+    BLT.Keybinds:register_keybind(Randomizer.mod_instance, { id = "toggle_randomizer", allow_game = true, show_in_menu = false, callback = function()
+      if Utils:IsInHeist() then
+        return
+      end
       Randomizer.data.enabled = not Randomizer.data.enabled
+      Randomizer:update_outfit()
       Randomizer:save()
       if managers.chat then
         managers.chat:_receive_message(1, "System", managers.localization:text(Randomizer.data.enabled and "randomizer_enabled" or "randomizer_disabled"), tweak_data.system_chat_color)
