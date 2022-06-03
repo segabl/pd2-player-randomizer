@@ -5,7 +5,7 @@
 	"contact" : "Hoppip#1630",
 	"color" : "0.043 0.808 0.6",
 	"image" : "mod.png",
-	"version" : "2.3",
+	"version" : "2.3.1",
 	"updates" : [
 		{
 			"identifier" : "pd2-player-randomizer",
