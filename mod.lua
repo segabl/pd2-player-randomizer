@@ -156,7 +156,7 @@ if not Randomizer then
 			for part_type, parts in pairs(managers.blackmarket:get_dropable_mods_by_weapon_id(data.weapon_id)) do
 				local blacklisted = table.contains(self.blacklist.mod_types, part_type)
 				local skip_chance = math.random()
-				local skip_part_type = part_type == "custom" and skip_chance <= 0.7 or part_type == "ammo" and skip_chance <= 0.4 or skip_chance <= 0.2
+				local skip_part_type = part_type == "custom" and skip_chance <= 0.7 or part_type == "ammo" and skip_chance <= 0.4
 				if not blacklisted and not skip_part_type then
 					local forbidden = managers.weapon_factory:_get_forbidden_parts(data.factory_id, data.blueprint)
 					local filtered_parts = table.filter_list(parts, function (part_id)
@@ -408,6 +408,44 @@ if RequiredScript == "lib/managers/blackmarketmanager" then
 
 		return equipped_primary_original(self, ...)
 	end
+
+end
+
+--------------------------- WEAPON STUFF --------------------------
+if RequiredScript == "lib/units/weapons/newraycastweaponbase" then
+
+	NewRaycastWeaponBase.GADGET_COLORS = {}
+
+	Hooks:PostHook(NewRaycastWeaponBase, "clbk_assembly_complete", "clbk_assembly_complete_player_randomizer", function (self)
+		if Randomizer.data.only_owned_weapons or not Randomizer:is_randomized(3 - self:selection_index()) then
+			return
+		end
+
+		for _, part_id in ipairs(self._blueprint) do
+			NewRaycastWeaponBase.GADGET_COLORS[part_id] = NewRaycastWeaponBase.GADGET_COLORS[part_id] or {
+				laser = Color(hsv_to_rgb(math.random(360), math.random() * 0.5 + 0.5, math.random() * 0.25 + 0.75)),
+				flashlight = Color(1, 1, math.random() * 0.3 + 0.7)
+			}
+			local colors = NewRaycastWeaponBase.GADGET_COLORS[part_id]
+
+			local mod_td = tweak_data.weapon.factory.parts[part_id]
+			local part_data = self._parts[part_id]
+
+			if colors[mod_td.sub_type] then
+				local alpha = part_data.unit:base().GADGET_TYPE == "laser" and tweak_data.custom_colors.defaults.laser_alpha or 1
+				part_data.unit:base():set_color(colors[mod_td.sub_type]:with_alpha(alpha))
+			end
+
+			if mod_td.adds then
+				for _, add_part_id in ipairs(mod_td.adds) do
+					if self._parts[add_part_id] and self._parts[add_part_id].unit:base() then
+						local sub_type = tweak_data.weapon.factory.parts[add_part_id].sub_type
+						self._parts[add_part_id].unit:base():set_color(colors[sub_type])
+					end
+				end
+			end
+		end
+	end)
 
 end
 
