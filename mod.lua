@@ -3,6 +3,7 @@ if not Randomizer then
 	Randomizer = {}
 	Randomizer.data = {
 		enabled = true,
+		profile_link = 1,
 		hide_selections = true,
 		only_owned_weapons = false,
 		weapon_skin_chance = 0.5,
@@ -67,7 +68,7 @@ if not Randomizer then
 	end
 
 	function Randomizer:allow_randomizing()
-		return self.data.enabled and Utils:IsInGameState()
+		return self.data.enabled and Utils:IsInGameState() and (self.data.profile_link == 1 or self.data.profile_link - 1 == Global.multi_profile._current_profile)
 	end
 
 	function Randomizer:is_randomized(selection)
@@ -293,7 +294,7 @@ if not Randomizer then
 			end
 		end
 		local loc_str = w_blueprint == "" and "weapon_info_string_default" or "weapon_info_string"
-		managers.chat:_receive_message(1, "Player Randomizer",  managers.localization:text(loc_str, { WEAPON = w_name, MODS = w_blueprint }), tweak_data.system_chat_color)
+		managers.chat:_receive_message(1, managers.localization:to_upper_text("menu_system_message"), managers.localization:text(loc_str, { WEAPON = w_name, MODS = w_blueprint }), tweak_data.system_chat_color)
 	end
 
 	Hooks:Add("MenuManagerOnOpenMenu", "MenuManagerOnOpenMenuRandomizer", function ()
@@ -302,7 +303,6 @@ if not Randomizer then
 
 end
 
------------------------- MOD STUFF ------------------------
 if RequiredScript == "lib/managers/blackmarketmanager" then
 
 	function BlackMarketManager:get_weapon_name_by_category_slot(category, slot)
@@ -409,10 +409,7 @@ if RequiredScript == "lib/managers/blackmarketmanager" then
 		return equipped_primary_original(self, ...)
 	end
 
-end
-
---------------------------- WEAPON STUFF --------------------------
-if RequiredScript == "lib/units/weapons/newraycastweaponbase" then
+elseif RequiredScript == "lib/units/weapons/newraycastweaponbase" then
 
 	NewRaycastWeaponBase.GADGET_COLORS = {}
 
@@ -447,10 +444,7 @@ if RequiredScript == "lib/units/weapons/newraycastweaponbase" then
 		end
 	end)
 
-end
-
---------------------------- GUI STUFF --------------------------
-if RequiredScript == "lib/managers/menu/missionbriefinggui" then
+elseif RequiredScript == "lib/managers/menu/missionbriefinggui" then
 
 	Hooks:PostHook(MissionBriefingGui, "init", "init_player_randomizer", function ()
 		Randomizer:update_outfit()
@@ -523,10 +517,7 @@ if RequiredScript == "lib/managers/menu/missionbriefinggui" then
 		return confirm_pressed_original(self, ...)
 	end
 
-end
-
--------------------- MENU STUFF --------------------
-if RequiredScript == "lib/managers/menumanager" then
+elseif RequiredScript == "lib/managers/menumanager" then
 
 	Hooks:Add("LocalizationManagerPostInit", "LocalizationManagerPostInitPlayerRandomizer", function(loc)
 		loc:load_localization_file(Randomizer.mod_path .. "loc/english.txt")
@@ -542,25 +533,25 @@ if RequiredScript == "lib/managers/menumanager" then
 		end
 	end)
 
-	Hooks:Add("MenuManagerSetupCustomMenus", "MenuManagerSetupCustomMenusPlayerRandomizer", function(menu_manager, nodes)
-		MenuHelper:NewMenu(Randomizer.menu_id)
-	end)
-
-	Hooks:Add("MenuManagerPopulateCustomMenus", "MenuManagerPopulateCustomMenusPlayerRandomizer", function(menu_manager, nodes)
+	Hooks:Add("MenuManagerBuildCustomMenus", "MenuManagerBuildCustomMenusPlayerRandomizer", function(menu_manager, nodes)
 
 		Randomizer:load()
 
 		MenuCallbackHandler.Randomizer_toggle = function(self, item)
 			Randomizer.data[item:name()] = (item:value() == "on")
 			Randomizer:update_outfit()
-			Randomizer:save()
 		end
 
 		MenuCallbackHandler.Randomizer_value = function(self, item)
 			Randomizer.data[item:name()] = item:value()
 			Randomizer:update_outfit()
+		end
+
+		MenuCallbackHandler.Randomizer_save = function ()
 			Randomizer:save()
 		end
+
+		MenuHelper:NewMenu(Randomizer.menu_id)
 
 		MenuHelper:AddToggle({
 			id = "enabled",
@@ -568,6 +559,36 @@ if RequiredScript == "lib/managers/menumanager" then
 			desc = "enabled_desc",
 			callback = "Randomizer_toggle",
 			value = Randomizer.data.enabled,
+			menu_id = Randomizer.menu_id,
+			priority = 100
+		})
+		local profile_link_values = { "profile_link_none" }
+		local loc_strings = {}
+		if Global.multi_profile then
+			for i, profile in ipairs(Global.multi_profile._profiles) do
+				local profile_name = profile.name or ("Profile " .. i)
+				loc_strings["menu_randomizer_profile_" .. i] = profile_name
+				if i + 1 == Randomizer.data.profile_link then
+					Randomizer.data.profile_link_name = profile_name
+				end
+				table.insert(profile_link_values, "menu_randomizer_profile_" .. i)
+			end
+		else
+			-- At first startup, profile information is not available yet
+			for i = 1, math.max(15, Randomizer.data.profile_link - 1) do
+				local profile_name = i + 1 == Randomizer.data.profile_link and Randomizer.data.profile_link_name or "Profile " .. i
+				loc_strings["menu_randomizer_profile_" .. i] = profile_name
+				table.insert(profile_link_values, "menu_randomizer_profile_" .. i)
+			end
+		end
+		managers.localization:add_localized_strings(loc_strings)
+		MenuHelper:AddMultipleChoice({
+			id = "profile_link",
+			title = "profile_link_name",
+			desc = "profile_link_desc",
+			callback = "Randomizer_value",
+			value = Randomizer.data.profile_link,
+			items = profile_link_values,
 			menu_id = Randomizer.menu_id,
 			priority = 99
 		})
@@ -682,7 +703,7 @@ if RequiredScript == "lib/managers/menumanager" then
 		MenuHelper:AddKeybinding({
 			id = "display_weapon_info",
 			title = "display_weapon_info_name",
-			desc= "display_weapon_info_desc",
+			desc = "display_weapon_info_desc",
 			connection_name = "display_weapon_info",
 			binding = key,
 			button = key,
@@ -697,7 +718,7 @@ if RequiredScript == "lib/managers/menumanager" then
 			Randomizer:update_outfit()
 			Randomizer:save()
 			if managers.chat then
-				managers.chat:_receive_message(1, "System", managers.localization:text(Randomizer.data.enabled and "randomizer_enabled" or "randomizer_disabled"), tweak_data.system_chat_color)
+				managers.chat:_receive_message(1, managers.localization:to_upper_text("menu_system_message"), managers.localization:text(Randomizer.data.enabled and "randomizer_enabled" or "randomizer_disabled"), tweak_data.system_chat_color)
 			end
 			Randomizer:set_menu_state(not Utils:IsInHeist())
 		end })
@@ -706,19 +727,45 @@ if RequiredScript == "lib/managers/menumanager" then
 		MenuHelper:AddKeybinding({
 			id = "toggle_randomizer",
 			title = "toggle_randomizer_name",
-			desc= "toggle_randomizer_desc",
+			desc = "toggle_randomizer_desc",
 			connection_name = "toggle_randomizer",
 			binding = key,
 			button = key,
 			menu_id = Randomizer.menu_id,
 			priority = -2
 		})
+		BLT.Keybinds:register_keybind(Randomizer.mod_instance, { id = "reroll_randomizer", allow_game = true, show_in_menu = false, callback = function()
+			if Utils:IsInHeist() then
+				return
+			end
+			Randomizer._random_armor = nil
+			Randomizer._random_deployable = nil
+			Randomizer._random_grenade = nil
+			Randomizer._random_melee = nil
+			Randomizer._random_weapon = nil
+			Randomizer._random_weapon_owned = nil
+			managers.multi_profile:load_current()
+			Randomizer:update_outfit()
+			if managers.chat then
+				managers.chat:_receive_message(1, managers.localization:to_upper_text("menu_system_message"), managers.localization:text("randomizer_rerolled"), tweak_data.system_chat_color)
+			end
+		end })
+		bind = BLT.Keybinds:get_keybind("reroll_randomizer")
+		key = bind and bind:Key() or ""
+		MenuHelper:AddKeybinding({
+			id = "reroll_randomizer",
+			title = "reroll_randomizer_name",
+			desc = "reroll_randomizer_desc",
+			connection_name = "reroll_randomizer",
+			binding = key,
+			button = key,
+			menu_id = Randomizer.menu_id,
+			priority = -3
+		})
 
-	end)
-
-	Hooks:Add("MenuManagerBuildCustomMenus", "MenuManagerBuildCustomMenusPlayerRandomizer", function(menu_manager, nodes)
-		nodes[Randomizer.menu_id] = MenuHelper:BuildMenu(Randomizer.menu_id)
+		nodes[Randomizer.menu_id] = MenuHelper:BuildMenu(Randomizer.menu_id, { back_callback = "Randomizer_save" })
 		MenuHelper:AddMenuItem(nodes["blt_options"], Randomizer.menu_id, "Randomizer_menu_main_name", "Randomizer_menu_main_desc")
+
 	end)
 
 end
