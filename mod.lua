@@ -90,6 +90,9 @@ if not Randomizer then
 	end
 
 	function Randomizer:update_outfit()
+		if managers.menu_component and managers.menu_component._mission_briefing_gui then
+			managers.menu_component._mission_briefing_gui:reload_loadout()
+		end
 		if managers.network and managers.network:session() and managers.network:session():local_peer() then
 			managers.network:session():local_peer():set_outfit_string(managers.blackmarket:outfit_string())
 		end
@@ -307,7 +310,7 @@ if RequiredScript == "lib/managers/blackmarketmanager" then
 
 	function BlackMarketManager:get_weapon_name_by_category_slot(category, slot)
 
-		local forced_weapon = category == "primaries" and self:forced_primary() or self:forced_secondary()
+		local forced_weapon = category == "primaries" and self:forced_primary() or category == "secondaries" and self:forced_secondary()
 		if forced_weapon then
 			slot = forced_weapon.slot
 			if not slot then
@@ -744,7 +747,15 @@ elseif RequiredScript == "lib/managers/menumanager" then
 			Randomizer._random_melee = nil
 			Randomizer._random_weapon = nil
 			Randomizer._random_weapon_owned = nil
-			managers.multi_profile:load_current()
+			local blm = managers.blackmarket
+			blm:clean_weapon_equipped_cache()
+			blm:equip_weapon("primaries", blm:equipped_weapon_slot("primaries"))
+			blm:equip_weapon("secondaries", blm:equipped_weapon_slot("secondaries"))
+			blm:equip_melee_weapon(blm:equipped_melee_weapon())
+			blm:equip_grenade(blm:equipped_grenade())
+			blm:equip_deployable({target_slot = 1, name = blm:equipped_deployable(1)})
+			blm:equip_deployable({target_slot = 2, name = blm:equipped_deployable(2)})
+			blm:equip_armor(blm:equipped_armor())
 			Randomizer:update_outfit()
 			if managers.chat then
 				managers.chat:_receive_message(1, managers.localization:to_upper_text("menu_system_message"), managers.localization:text("randomizer_rerolled"), tweak_data.system_chat_color)
