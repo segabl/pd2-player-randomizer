@@ -285,19 +285,24 @@ if not Randomizer then
 		if not w then
 			return
 		end
+		local factory_parts = tweak_data.weapon.factory.parts
 		local w_name = managers.weapon_factory:get_weapon_name_by_weapon_id(w._name_id)
-		local w_blueprint = ""
-		local p_name
-		local has = {}
+		local blueprint = {}
 		for _, part_id in pairs(w._blueprint) do
-			p_name = managers.weapon_factory:get_part_name_by_part_id(part_id)
-			if p_name and not p_name:match("^ERROR:") and not has[p_name] then
-				has[p_name] = true
-				w_blueprint = w_blueprint .. (w_blueprint == "" and "" or ", ") .. p_name
+			local part_tweak = factory_parts[part_id]
+			if part_tweak and part_tweak.pcs and part_tweak.name_id and not blueprint[part_tweak.name_id] then
+				local name = managers.localization:text(part_tweak.name_id)
+				if part_tweak.type == "charm" and not name:lower():match("charm$") then
+					name = name .. " Charm"
+				elseif part_tweak.type == "bonus" and not name:lower():match("boost$") then
+					name = name .. " Boost"
+				end
+				blueprint[part_tweak.name_id] = name
 			end
 		end
-		local loc_str = w_blueprint == "" and "weapon_info_string_default" or "weapon_info_string"
-		managers.chat:_receive_message(1, managers.localization:to_upper_text("menu_system_message"), managers.localization:text(loc_str, { WEAPON = w_name, MODS = w_blueprint }), tweak_data.system_chat_color)
+		local loc_str = table.size(blueprint) == 0 and "weapon_info_string_default" or "weapon_info_string"
+		local weap_info = managers.localization:text(loc_str, { WEAPON = w_name, MODS = table.concat(table.map_values(blueprint), ", ") })
+		managers.chat:_receive_message(1, managers.localization:to_upper_text("menu_system_message"), weap_info, tweak_data.system_chat_color)
 	end
 
 	Hooks:Add("MenuManagerOnOpenMenu", "MenuManagerOnOpenMenuRandomizer", function ()
