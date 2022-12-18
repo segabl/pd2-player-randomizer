@@ -4,7 +4,7 @@
 	"author" : "Hoppip",
 	"color" : "0.043 0.808 0.6",
 	"image" : "mod.png",
-	"version" : "2.3.3",
+	"version" : "2.3.4",
 	"updates" : [{
 		"identifier" : "pd2-player-randomizer",
 		"host": { "meta": "http://updates.hoppip.at/pd2-player-randomizer" }
