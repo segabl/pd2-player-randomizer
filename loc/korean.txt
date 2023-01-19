@@ -12,6 +12,8 @@
 	"only_owned_weapons_desc": "무작위 중에서 인벤토리에 있는 무기만 선택됩니다",
 	"weapon_skin_chance_name": "Weapon skin chance",
 	"weapon_skin_chance_desc": "Chance for a weapon skin to be selected by the Randomizer",
+	"part_category_chances_name" : "Weapon part category chances",
+	"part_category_chances_desc" : "Adjust chances for different part categories to be selected by the Randomizer",
 	"character_desc": "캐릭터를 무작위로 선택합니다",
 	"primary_desc": "주무기를 무작위로 선택합니다",
 	"secondary_desc": "보조무기를 무작위로 선택합니다",

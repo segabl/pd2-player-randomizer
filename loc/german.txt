@@ -12,6 +12,8 @@
 	"only_owned_weapons_desc": "Der Randomizer wird nur Waffen aus deinem Inventar wählen",
 	"weapon_skin_chance_name": "Waffenkosmetik Chance",
 	"weapon_skin_chance_desc": "Wahrscheinlichkeit, dass Randomizer Waffenkosmetiken auswählt",
+	"part_category_chances_name" : "Weapon part category chances",
+	"part_category_chances_desc" : "Adjust chances for different part categories to be selected by the Randomizer",
 	"character_desc": "Zufällig gewählter Charakter",
 	"primary_desc": "Zufällig gewählte Primärwaffe",
 	"secondary_desc": "Zufällig gewählte Sekundärwaffe",

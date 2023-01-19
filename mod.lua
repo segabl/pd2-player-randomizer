@@ -158,10 +158,7 @@ if not Randomizer then
 			end
 			data.blueprint = deep_clone(data.cosmetics and tweak_data.blackmarket.weapon_skins[data.cosmetics.id].default_blueprint or tweak_data.weapon.factory[data.factory_id].default_blueprint)
 			for part_type, parts in pairs(managers.blackmarket:get_dropable_mods_by_weapon_id(data.weapon_id)) do
-				local blacklisted = table.contains(self.blacklist.mod_types, part_type)
-				local skip_chance = math.random()
-				local skip_part_type = part_type == "custom" and skip_chance <= 0.7 or part_type == "ammo" and skip_chance <= 0.4
-				if not blacklisted and not skip_part_type then
+				if math.random() < (self.data[part_type .. "_chance"] or 1) then
 					local forbidden = managers.weapon_factory:_get_forbidden_parts(data.factory_id, data.blueprint)
 					local filtered_parts = table.filter_list(parts, function (part_id)
 						local blacklisted = table.contains(self.blacklist.mods, part_id[1])
@@ -202,7 +199,7 @@ if not Randomizer then
 	function Randomizer:get_random_weapon_owned(selection_index)
 		self:chk_setup_weapons_owned()
 		self._random_weapon_owned = self._random_weapon_owned or {}
-		self._random_weapon_owned[selection_index] = self._random_weapon_owned[selection_index] or self.weapons_owned[selection_index][math.random(#self.weapons_owned[selection_index])]
+		self._random_weapon_owned[selection_index] = self._random_weapon_owned[selection_index] or table.random(self.weapons_owned[selection_index])
 		return self._random_weapon_owned[selection_index]
 	end
 
@@ -560,7 +557,9 @@ elseif RequiredScript == "lib/managers/menumanager" then
 			Randomizer:save()
 		end
 
+		local part_category_id = Randomizer.menu_id .. "PartCategories"
 		MenuHelper:NewMenu(Randomizer.menu_id)
+		MenuHelper:NewMenu(part_category_id)
 
 		MenuHelper:AddToggle({
 			id = "enabled",
@@ -602,11 +601,11 @@ elseif RequiredScript == "lib/managers/menumanager" then
 			priority = 99
 		})
 		MenuHelper:AddDivider({
-			id = "divider",
 			size = 24,
 			menu_id = Randomizer.menu_id,
 			priority = 98
 		})
+
 		MenuHelper:AddToggle({
 			id = "hide_selections",
 			title = "hide_selections_name",
@@ -633,17 +632,47 @@ elseif RequiredScript == "lib/managers/menumanager" then
 			value = Randomizer.data.weapon_skin_chance,
 			min = 0,
 			max = 1,
-			step = 0.01,
+			step = 0.05,
 			show_value = true,
 			menu_id = Randomizer.menu_id,
 			priority = 95
 		})
+		MenuHelper:AddButton({
+			id = "part_category_chances",
+			title = "part_category_chances_name",
+			desc = "part_category_chances_desc",
+			menu_id = Randomizer.menu_id,
+			next_node = part_category_id,
+			priority = 94
+		})
+
+		local part_cat = {}
+		for _, part_data in pairs(tweak_data.weapon.factory.parts) do
+			local cat = part_data.type
+			if not part_cat[cat] and not part_data.inaccessible and (part_data.pcs or part_data.pc) then
+				part_cat[cat] = true
+
+				local id = cat .. "_chance"
+				MenuHelper:AddSlider({
+					id = id,
+					title = "bm_menu_" .. cat,
+					callback = "Randomizer_value",
+					value = Randomizer.data[id] or 1,
+					min = 0,
+					max = 1,
+					step = 0.05,
+					show_value = true,
+					menu_id = part_category_id
+				})
+			end
+		end
+
 		MenuHelper:AddDivider({
-			id = "divider2",
 			size = 24,
 			menu_id = Randomizer.menu_id,
 			priority = 10
 		})
+
 		MenuHelper:AddToggle({
 			id = "random_primary",
 			title = "bm_menu_primaries",
@@ -699,11 +728,11 @@ elseif RequiredScript == "lib/managers/menumanager" then
 			priority = 1
 		})
 		MenuHelper:AddDivider({
-			id = "divider2",
 			size = 24,
 			menu_id = Randomizer.menu_id,
 			priority = 0
 		})
+
 		BLT.Keybinds:register_keybind(Randomizer.mod_instance, { id = "display_weapon_info", allow_game = true, show_in_menu = false, callback = function()
 			Randomizer:show_weapon_info()
 		end })
@@ -717,7 +746,7 @@ elseif RequiredScript == "lib/managers/menumanager" then
 			binding = key,
 			button = key,
 			menu_id = Randomizer.menu_id,
-			priority = -1
+			priority = -11
 		})
 		BLT.Keybinds:register_keybind(Randomizer.mod_instance, { id = "toggle_randomizer", allow_game = true, show_in_menu = false, callback = function()
 			if Utils:IsInHeist() then
@@ -741,7 +770,7 @@ elseif RequiredScript == "lib/managers/menumanager" then
 			binding = key,
 			button = key,
 			menu_id = Randomizer.menu_id,
-			priority = -2
+			priority = -12
 		})
 		BLT.Keybinds:register_keybind(Randomizer.mod_instance, { id = "reroll_randomizer", allow_game = true, show_in_menu = false, callback = function()
 			if Utils:IsInHeist() then
@@ -777,10 +806,11 @@ elseif RequiredScript == "lib/managers/menumanager" then
 			binding = key,
 			button = key,
 			menu_id = Randomizer.menu_id,
-			priority = -3
+			priority = -13
 		})
 
 		nodes[Randomizer.menu_id] = MenuHelper:BuildMenu(Randomizer.menu_id, { back_callback = "Randomizer_save" })
+		nodes[part_category_id] = MenuHelper:BuildMenu(part_category_id, { back_callback = "Randomizer_save" })
 		MenuHelper:AddMenuItem(nodes["blt_options"], Randomizer.menu_id, "Randomizer_menu_main_name", "Randomizer_menu_main_desc")
 
 	end)

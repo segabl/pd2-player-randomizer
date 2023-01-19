@@ -12,6 +12,8 @@
 	"only_owned_weapons_desc": "Randomizer sceglierà solo le armi del tuo inventario",
 	"weapon_skin_chance_name": "Weapon skin chance",
 	"weapon_skin_chance_desc": "Chance for a weapon skin to be selected by the Randomizer",
+	"part_category_chances_name" : "Weapon part category chances",
+	"part_category_chances_desc" : "Adjust chances for different part categories to be selected by the Randomizer",
 	"character_desc": "Rendi casuale il tuo personaggio",
 	"primary_desc": "Rendi casuale la tua arma primaria",
 	"secondary_desc": "Rendi casuale la tua arma secondaria",
