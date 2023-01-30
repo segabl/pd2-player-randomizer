@@ -163,7 +163,7 @@ if not Randomizer then
 					local filtered_parts = table.filter_list(parts, function (part_id)
 						local blacklisted = table.contains(self.blacklist.mods, part_id[1])
 						local part = tweak_data.weapon.factory.parts[part_id[1]]
-						return not forbidden[part_id[1]] and not blacklisted and not managers.weapon_factory:_get_forbidden_parts(data.factory_id, data.blueprint)[part_id[1]] and (not part.dlc or managers.dlc:is_dlc_unlocked(part.dlc))
+						return not part.unatainable and not forbidden[part_id[1]] and not blacklisted and not managers.weapon_factory:_get_forbidden_parts(data.factory_id, data.blueprint)[part_id[1]] and (not part.dlc or managers.dlc:is_dlc_unlocked(part.dlc))
 					end)
 					local part_id = table.random(filtered_parts)
 					if part_id then
