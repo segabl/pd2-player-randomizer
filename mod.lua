@@ -3,7 +3,6 @@ if not Randomizer then
 	Randomizer = {}
 	Randomizer.data = {
 		enabled = true,
-		profile_link = 1,
 		hide_selections = true,
 		only_owned_weapons = false,
 		weapon_skin_chance = 0.5,
@@ -27,33 +26,23 @@ if not Randomizer then
 	}
 
 	function Randomizer:save()
-		local file = io.open(self.save_path .. "player_randomizer.txt", "w+")
-		if file then
-			file:write(json.encode(self.data))
-			file:close()
-		end
-		file = io.open(self.save_path .. "player_randomizer_blacklist.txt", "w+")
-		if file then
-			file:write(json.encode(self.blacklist))
-			file:close()
-		end
+		io.save_as_json(self.data, self.save_path .. "player_randomizer.txt")
 	end
 
 	function Randomizer:load()
-		local file = io.open(self.save_path .. "player_randomizer.txt", "r")
-		if file then
-			local data = json.decode(file:read("*all"))
+		local file = self.save_path .. "player_randomizer.txt"
+		local data = io.file_is_readable(file) and io.load_as_json(file)
+		if data then
 			for k, v in pairs(data) do
 				self.data[k] = v
 			end
-			file:close()
-			file = io.open(self.save_path .. "player_randomizer_blacklist.txt", "r")
-			if file then
-				local blacklist = json.decode(file:read("*all")) or {}
-				file:close()
-				for k, v in pairs(blacklist) do
-					self.blacklist[k] = v
-				end
+		end
+
+		file = self.save_path .. "player_randomizer_blacklist.txt"
+		data = io.file_is_readable(file) and io.load_as_json(file)
+		if data then
+			for k, v in pairs(data) do
+				self.blacklist[k] = v
 			end
 		end
 	end
@@ -68,8 +57,18 @@ if not Randomizer then
 		end
 	end
 
+	function Randomizer:is_current_profile_randomized()
+		return managers.multi_profile and self.data["profile_" .. tostring(managers.multi_profile._global._current_profile)]
+	end
+
+	function Randomizer:set_current_profile_randomized(randomized)
+		if managers.multi_profile then
+			self.data["profile_" .. tostring(managers.multi_profile._global._current_profile)] = randomized
+		end
+	end
+
 	function Randomizer:allow_randomizing()
-		return self.data.enabled and Utils:IsInGameState() and (self.data.profile_link == 1 or self.data.profile_link - 1 == Global.multi_profile._current_profile)
+		return self.data.enabled and Utils:IsInGameState() and self:is_current_profile_randomized()
 	end
 
 	function Randomizer:is_randomized(selection)
@@ -307,6 +306,8 @@ if not Randomizer then
 		Randomizer:set_menu_state(not Utils:IsInHeist())
 	end)
 
+	Randomizer:load()
+
 end
 
 if RequiredScript == "lib/managers/blackmarketmanager" then
@@ -480,6 +481,106 @@ elseif RequiredScript == "lib/units/weapons/newraycastweaponbase" then
 		end
 	end)
 
+elseif RequiredScript == "lib/managers/menu/multiprofileitemgui" then
+
+	function MultiProfileItemGui:_update_randomizer_state()
+		if not alive(self._randomizer_panel) then
+			return
+		end
+
+		local randomized = Randomizer:is_current_profile_randomized()
+		self._randomizer_panel:child(0):set_alpha(randomized and 1 or 0.5)
+		self._randomizer_panel:child(1):set_visible(not randomized)
+	end
+
+	Hooks:PostHook(MultiProfileItemGui, "init", "init_player_randomizer", function (self)
+		if alive(self._randomizer_panel) then
+			return
+		end
+
+		local w_increase = self.padding + self.quick_panel_w
+		self._panel:set_w(self._panel:w() + w_increase)
+		self._box_panel:set_size(self._panel:size())
+		self._box_panel:child(0):set_size(self._panel:size())
+		self._profile_panel:move(w_increase, 0)
+		if alive(_quick_select_panel) then
+			self._quick_select_panel:move(w_increase, 0)
+		end
+
+		self._randomizer_panel = self._panel:panel({
+			w = self.quick_panel_w,
+			h = self.quick_panel_h
+		})
+
+		local color = Randomizer.data.enabled and tweak_data.screen_colors.button_stage_3 or Color(0.25, 0.25, 0.25)
+
+		self._randomizer_panel:bitmap({
+			texture = "guis/textures/pd2/dice_icon",
+			color = color,
+			x = self.padding,
+			y = self.padding,
+			w = self.quick_panel_w - self.padding * 2,
+			h = self.quick_panel_h - self.padding * 2
+		})
+
+		self._randomizer_panel:polyline({
+			layer = 1,
+			line_width = 3,
+			color = color,
+			points = {
+				Vector3(self.padding * 1.5, self.quick_panel_h - self.padding * 1.5, 0),
+				Vector3(self.quick_panel_w - self.padding * 1.5, self.padding * 1.5, 0)
+			}
+		})
+
+		self._randomizer_panel:set_right(self._profile_panel:left() - self.padding)
+		self._randomizer_panel:set_center_y(self._panel:h() / 2)
+		self._randomizer_panel:set_top(math.round(self._randomizer_panel:top()))
+
+		self:_update_randomizer_state()
+	end)
+
+	Hooks:PostHook(MultiProfileItemGui, "mouse_moved", "mouse_moved_player_randomizer", function (self, x, y)
+		if self._arrow_selection then
+			return
+		end
+
+		if alive(self._randomizer_panel) then
+			if self._randomizer_panel:inside(x, y) then
+				if self._is_randomizer_selected ~= true then
+					for _, element in pairs(self._randomizer_panel:children()) do
+						element:set_color(Randomizer.data.enabled and tweak_data.screen_colors.button_stage_2 or Color(0.5, 0.5, 0.5))
+					end
+
+					managers.menu_component:post_event("highlight")
+
+					self._is_randomizer_selected = true
+				end
+
+				self._arrow_selection = "randomizer"
+
+				return true, "link"
+			elseif self._is_randomizer_selected == true then
+				for _, element in pairs(self._randomizer_panel:children()) do
+					element:set_color(Randomizer.data.enabled and tweak_data.screen_colors.button_stage_3 or Color(0.25, 0.25, 0.25))
+				end
+
+				self._is_randomizer_selected = false
+			end
+		end
+	end)
+
+	Hooks:PostHook(MultiProfileItemGui, "mouse_pressed", "mouse_pressed_player_randomizer", function (self, button, x, y)
+		if button == Idstring("0") and self:arrow_selection() == "randomizer" then
+			Randomizer:set_current_profile_randomized(not Randomizer:is_current_profile_randomized())
+			Randomizer:update_outfit()
+			Randomizer:save()
+			managers.menu_component:post_event("menu_enter")
+		end
+
+		self:_update_randomizer_state()
+	end)
+
 elseif RequiredScript == "lib/managers/menu/missionbriefinggui" then
 
 	Hooks:PostHook(MissionBriefingGui, "init", "init_player_randomizer", function ()
@@ -571,8 +672,6 @@ elseif RequiredScript == "lib/managers/menumanager" then
 
 	Hooks:Add("MenuManagerBuildCustomMenus", "MenuManagerBuildCustomMenusPlayerRandomizer", function(menu_manager, nodes)
 
-		Randomizer:load()
-
 		MenuCallbackHandler.Randomizer_toggle = function(self, item)
 			Randomizer.data[item:name()] = (item:value() == "on")
 			Randomizer:update_outfit()
@@ -597,36 +696,6 @@ elseif RequiredScript == "lib/managers/menumanager" then
 			desc = "enabled_desc",
 			callback = "Randomizer_toggle",
 			value = Randomizer.data.enabled,
-			menu_id = Randomizer.menu_id,
-			priority = 101
-		})
-		local profile_link_values = { "profile_link_none" }
-		local loc_strings = {}
-		if Global.multi_profile then
-			for i, profile in ipairs(Global.multi_profile._profiles) do
-				local profile_name = profile.name or ("Profile " .. i)
-				loc_strings["menu_randomizer_profile_" .. i] = profile_name
-				if i + 1 == Randomizer.data.profile_link then
-					Randomizer.data.profile_link_name = profile_name
-				end
-				table.insert(profile_link_values, "menu_randomizer_profile_" .. i)
-			end
-		else
-			-- At first startup, profile information is not available yet
-			for i = 1, math.max(15, Randomizer.data.profile_link - 1) do
-				local profile_name = i + 1 == Randomizer.data.profile_link and Randomizer.data.profile_link_name or "Profile " .. i
-				loc_strings["menu_randomizer_profile_" .. i] = profile_name
-				table.insert(profile_link_values, "menu_randomizer_profile_" .. i)
-			end
-		end
-		managers.localization:add_localized_strings(loc_strings)
-		MenuHelper:AddMultipleChoice({
-			id = "profile_link",
-			title = "profile_link_name",
-			desc = "profile_link_desc",
-			callback = "Randomizer_value",
-			value = Randomizer.data.profile_link,
-			items = profile_link_values,
 			menu_id = Randomizer.menu_id,
 			priority = 100
 		})

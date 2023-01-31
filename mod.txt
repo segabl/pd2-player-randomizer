@@ -4,7 +4,7 @@
 	"author" : "Hoppip",
 	"color" : "0.043 0.808 0.6",
 	"image" : "mod.png",
-	"version" : "2.3.5",
+	"version" : "2.4.0",
 	"updates" : [{
 		"identifier" : "pd2-player-randomizer",
 		"host": { "meta": "http://updates.hoppip.at/pd2-player-randomizer" }
@@ -13,6 +13,7 @@
 		{ "hook_id" : "lib/managers/blackmarketmanager", "script_path" : "mod.lua" },
 		{ "hook_id" : "lib/managers/menumanager", "script_path" : "mod.lua" },
 		{ "hook_id" : "lib/managers/menu/missionbriefinggui", "script_path" : "mod.lua" },
+		{ "hook_id" : "lib/managers/menu/multiprofileitemgui", "script_path" : "mod.lua" },
 		{ "hook_id" : "lib/units/weapons/newraycastweaponbase", "script_path" : "mod.lua" }
 	]
 }
