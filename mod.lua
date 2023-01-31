@@ -12,7 +12,8 @@ if not Randomizer then
 		random_melee = true,
 		random_grenade = true,
 		random_armor = true,
-		random_deployable = true
+		random_deployable = true,
+		random_reticle = true
 	}
 	Randomizer.save_path = SavePath
 	Randomizer.mod_path = ModPath
@@ -414,6 +415,35 @@ if RequiredScript == "lib/managers/blackmarketmanager" then
 		return equipped_primary_original(self, ...)
 	end
 
+	local get_weapon_texture_switches_original = BlackMarketManager.get_weapon_texture_switches
+	function BlackMarketManager:get_weapon_texture_switches(category, slot, weapon, ...)
+		local texture_switches = get_weapon_texture_switches_original(self, category, slot, weapon, ...)
+
+		if weapon and not Randomizer.data.only_owned_weapons and Randomizer:is_randomized(category == "primaries" and 1 or category == "secondaries" and 2) then
+			texture_switches = texture_switches or {}
+
+			local wts = tweak_data.gui.weapon_texture_switches
+			for _, part_id in pairs(weapon.blueprint or {}) do
+				if tweak_data.gui.part_texture_switches[part_id] then
+					texture_switches[part_id] = tweak_data.gui.part_texture_switches[part_id]
+				elseif Randomizer.data.random_reticle then
+					local part_data = tweak_data.weapon.factory.parts[part_id]
+					local switches = part_data and part_data.texture_switch and wts.types[part_data.type] or wts.types[part_data.sub_type]
+					if switches then
+						texture_switches[part_id] = math.random(#wts.color_indexes) .. " " .. math.random(#switches)
+					end
+				else
+					local part_data = tweak_data.weapon.factory.parts[part_id]
+					if part_data and part_data.texture_switch then
+						texture_switches[part_id] = tweak_data.gui.default_part_texture_switch
+					end
+				end
+			end
+		end
+
+		return texture_switches
+	end
+
 elseif RequiredScript == "lib/units/weapons/newraycastweaponbase" then
 
 	NewRaycastWeaponBase.GADGET_COLORS = {}
@@ -425,8 +455,8 @@ elseif RequiredScript == "lib/units/weapons/newraycastweaponbase" then
 
 		local function try_set_color(part_id)
 			NewRaycastWeaponBase.GADGET_COLORS[part_id] = NewRaycastWeaponBase.GADGET_COLORS[part_id] or {
-				laser = Color(hsv_to_rgb(math.random(360), math.random() * 0.5 + 0.5, math.random() * 0.25 + 0.75)),
-				flashlight = Color(1, 1, math.random() * 0.3 + 0.7)
+				laser = Color(hsv_to_rgb(math.random(360), math.random() * 0.25 + 0.75, math.random() * 0.25 + 0.75)),
+				flashlight = Color(1, 1, math.random() * 0.25 + 0.75)
 			}
 
 			local mod_td = tweak_data.weapon.factory.parts[part_id]
@@ -568,7 +598,7 @@ elseif RequiredScript == "lib/managers/menumanager" then
 			callback = "Randomizer_toggle",
 			value = Randomizer.data.enabled,
 			menu_id = Randomizer.menu_id,
-			priority = 100
+			priority = 101
 		})
 		local profile_link_values = { "profile_link_none" }
 		local loc_strings = {}
@@ -598,12 +628,12 @@ elseif RequiredScript == "lib/managers/menumanager" then
 			value = Randomizer.data.profile_link,
 			items = profile_link_values,
 			menu_id = Randomizer.menu_id,
-			priority = 99
+			priority = 100
 		})
 		MenuHelper:AddDivider({
 			size = 24,
 			menu_id = Randomizer.menu_id,
-			priority = 98
+			priority = 99
 		})
 
 		MenuHelper:AddToggle({
@@ -613,7 +643,7 @@ elseif RequiredScript == "lib/managers/menumanager" then
 			callback = "Randomizer_toggle",
 			value = Randomizer.data.hide_selections,
 			menu_id = Randomizer.menu_id,
-			priority = 97
+			priority = 98
 		})
 		MenuHelper:AddToggle({
 			id = "only_owned_weapons",
@@ -621,6 +651,15 @@ elseif RequiredScript == "lib/managers/menumanager" then
 			desc = "only_owned_weapons_desc",
 			callback = "Randomizer_toggle",
 			value = Randomizer.data.only_owned_weapons,
+			menu_id = Randomizer.menu_id,
+			priority = 97
+		})
+		MenuHelper:AddToggle({
+			id = "random_reticle",
+			title = "random_reticle_name",
+			desc = "random_reticle_desc",
+			callback = "Randomizer_toggle",
+			value = Randomizer.data.random_reticle,
 			menu_id = Randomizer.menu_id,
 			priority = 96
 		})

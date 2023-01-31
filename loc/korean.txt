@@ -21,6 +21,8 @@
 	"grenade_desc": "투척무기를 무작위로 선택합니다",
 	"armor_desc": "방탄복을 무작위로 선택합니다",
 	"deployable_desc": "장비를 무작위로 선택합니다",
+	"random_reticle_name": "Randomize Reticle",
+	"random_reticle_desc": "Randomizes sight reticles for randomly picked sights",
 	"display_weapon_info_name": "Display weapon info",
 	"display_weapon_info_desc": "Keybind to show information about the currently equipped weapon",
 	"weapon_info_string": "Using $WEAPON with $MODS",

@@ -21,6 +21,8 @@
 	"grenade_desc": "Zufällig gewählte Wurfwaffe",
 	"armor_desc": "Zufällig gewählte Panzerung",
 	"deployable_desc": "Zufällig gewählte Ausrüstung",
+	"random_reticle_name": "Wähle zufälliges Fadenkreuz",
+	"random_reticle_desc": "Wählt ein zufälliges Fadenkreuz bei zufällig gewähltem Visier",
 	"display_weapon_info_name": "Waffen Info anzeigen",
 	"display_weapon_info_desc": "Taste um Informationen über die momentane Waffe anzuzeigen",
 	"weapon_info_string": "Benutze $WEAPON mit $MODS",

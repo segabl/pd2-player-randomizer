@@ -21,6 +21,8 @@
 	"grenade_desc": "Рандомизируйте ваше метательное оружие",
 	"armor_desc": "Рандомизируйте вашу броню",
 	"deployable_desc": "Рандомизируйте ваше снаряжение",
+	"random_reticle_name": "Randomize Reticle",
+	"random_reticle_desc": "Randomizes sight reticles for randomly picked sights",
 	"display_weapon_info_name": "Display weapon info",
 	"display_weapon_info_desc": "Keybind to show information about the currently equipped weapon",
 	"weapon_info_string": "Using $WEAPON with $MODS",
