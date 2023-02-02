@@ -15,7 +15,7 @@ Hooks:PostHook(NewRaycastWeaponBase, "clbk_assembly_complete", "clbk_assembly_co
 		local part_data = self._parts[part_id]
 		local colors = NewRaycastWeaponBase.GADGET_COLORS[part_id]
 
-		if part_data and colors[mod_td.sub_type] then
+		if colors[mod_td.sub_type] and part_data and alive(part_data.unit) and part_data.unit:base() then
 			local alpha = part_data.unit:base().GADGET_TYPE == "laser" and tweak_data.custom_colors.defaults.laser_alpha or 1
 			part_data.unit:base():set_color(colors[mod_td.sub_type]:with_alpha(alpha))
 		end
