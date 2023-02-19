@@ -319,7 +319,7 @@ if not PlayerRandomizer then
 	end
 
 	function PlayerRandomizer:reroll()
-		if Utils:IsInHeist() then
+		if Utils:IsInHeist() or not PlayerRandomizer.settings.enabled then
 			return
 		end
 
