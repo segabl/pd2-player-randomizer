@@ -24,6 +24,7 @@ if not PlayerRandomizer then
 		mods = {},
 		mod_types = {}
 	}
+	PlayerRandomizer.required = {}
 
 	function PlayerRandomizer:save()
 		io.save_as_json(self.settings, self.save_path .. "player_randomizer.txt")
@@ -606,14 +607,13 @@ if not PlayerRandomizer then
 
 end
 
-local required = {}
-if RequiredScript and not required[RequiredScript] then
+if RequiredScript and not PlayerRandomizer.required[RequiredScript] then
 
 	local fname = PlayerRandomizer.mod_path .. RequiredScript:gsub(".+/(.+)", "lua/%1.lua")
 	if io.file_is_readable(fname) then
 		dofile(fname)
 	end
 
-	required[RequiredScript] = true
+	PlayerRandomizer.required[RequiredScript] = true
 
 end
