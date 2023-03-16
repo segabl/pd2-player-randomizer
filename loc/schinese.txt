@@ -9,6 +9,8 @@
 	"only_owned_weapons_desc": "只会随机到你武器库里已有的装备",
 	"weapon_skin_chance_name": "武器皮肤几率",
 	"weapon_skin_chance_desc": "有多少概率会让随机的武器带皮肤",
+	"weapon_categories_name" : "允许的武器类型",
+	"weapon_categories_desc" : "调节允许随机到哪些类型的武器",
 	"part_category_chances_name" : "武器配件概率",
 	"part_category_chances_desc" : "调节不同类别的武器配件有多少的概率会被随机的选择",
 	"character_desc": "随机你的角色",

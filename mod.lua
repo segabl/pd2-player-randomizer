@@ -18,11 +18,11 @@ if not PlayerRandomizer then
 	PlayerRandomizer.mod_path = ModPath
 	PlayerRandomizer.mod_instance = ModInstance
 	PlayerRandomizer.menu_id = "PlayerRandomizerMenu"
+	PlayerRandomizer.weapon_menu_id = "PlayerRandomizerMenuWeaponTypes"
+	PlayerRandomizer.part_menu_id = "PlayerRandomizerMenuPartChances"
 	PlayerRandomizer.blacklist = {
 		weapons = {},
-		weapon_types = {},
-		mods = {},
-		mod_types = {}
+		mods = {}
 	}
 	PlayerRandomizer.required = {}
 
@@ -104,19 +104,18 @@ if not PlayerRandomizer then
 			self.weapons = {}
 			for weapon, data in pairs(tweak_data.weapon) do
 				if data.autohit then
-					local blacklisted = table.contains(self.blacklist.weapons, weapon) or table.contains(self.blacklist.weapon_types, data.categories[1])
+					local blacklisted = table.contains(self.blacklist.weapons, weapon) or self.settings["weapon_" .. data.categories[1]] == false
 					local factory_id = managers.weapon_factory:get_factory_id_by_weapon_id(weapon)
 					local unlocked = tweak_data.weapon.factory[factory_id] and tweak_data.weapon.factory[factory_id].custom or not data.global_value or managers.dlc:is_dlc_unlocked(data.global_value)
 					if not blacklisted and unlocked then
 						local selection_index = data.use_data.selection_index
 						self.weapons[selection_index] = self.weapons[selection_index] or {}
-						local data = {
+						table.insert(self.weapons[selection_index], {
 							selection_index = selection_index,
 							weapon_id = weapon,
 							factory_id = factory_id,
 							equipped = true
-						}
-						table.insert(self.weapons[selection_index], data)
+						})
 					end
 				end
 			end
@@ -393,9 +392,9 @@ if not PlayerRandomizer then
 			PlayerRandomizer:save()
 		end
 
-		local part_category_id = PlayerRandomizer.menu_id .. "PartCategories"
 		MenuHelper:NewMenu(PlayerRandomizer.menu_id)
-		MenuHelper:NewMenu(part_category_id)
+		MenuHelper:NewMenu(PlayerRandomizer.weapon_menu_id)
+		MenuHelper:NewMenu(PlayerRandomizer.part_menu_id)
 
 		MenuHelper:AddToggle({
 			id = "enabled",
@@ -454,14 +453,48 @@ if not PlayerRandomizer then
 			menu_id = PlayerRandomizer.menu_id,
 			priority = 95
 		}))
+
+		table.insert(only_owned_weapons, MenuHelper:AddButton({
+			id = "weapon_categories",
+			title = "weapon_categories_name",
+			desc = "weapon_categories_desc",
+			disabled = PlayerRandomizer.settings.only_owned_weapons,
+			menu_id = PlayerRandomizer.menu_id,
+			next_node = PlayerRandomizer.weapon_menu_id,
+			priority = 94
+		}))
+
+		local weapon_cat = {}
+		for _, weap_data in pairs(tweak_data.weapon) do
+			if type(weap_data) == "table" and weap_data.categories and weap_data.stats then
+				local cat = weap_data.categories[1]
+
+				if not weapon_cat[cat] then
+					weapon_cat[cat] = true
+
+					local id = "weapon_" .. cat
+					local loc_id = "menu_" .. cat
+					local has_loc = managers.localization:exists(loc_id) or false
+					MenuHelper:AddToggle({
+						id = id,
+						title = has_loc and loc_id or cat,
+						localized = has_loc,
+						callback = "Randomizer_toggle",
+						value = PlayerRandomizer.settings[id] == nil and true or PlayerRandomizer.settings[id],
+						menu_id = PlayerRandomizer.weapon_menu_id
+					})
+				end
+			end
+		end
+
 		table.insert(only_owned_weapons, MenuHelper:AddButton({
 			id = "part_category_chances",
 			title = "part_category_chances_name",
 			desc = "part_category_chances_desc",
 			disabled = PlayerRandomizer.settings.only_owned_weapons,
 			menu_id = PlayerRandomizer.menu_id,
-			next_node = part_category_id,
-			priority = 94
+			next_node = PlayerRandomizer.part_menu_id,
+			priority = 93
 		}))
 
 		local part_cat = {}
@@ -471,16 +504,19 @@ if not PlayerRandomizer then
 				part_cat[cat] = true
 
 				local id = cat .. "_chance"
+				local loc_id = "bm_menu_" .. cat
+				local has_loc = managers.localization:exists(loc_id) or false
 				MenuHelper:AddSlider({
 					id = id,
-					title = "bm_menu_" .. cat,
+					title = has_loc and loc_id or cat,
+					localized = has_loc,
 					callback = "Randomizer_value",
 					value = PlayerRandomizer.settings[id] or 1,
 					min = 0,
 					max = 1,
 					step = 0.05,
 					show_value = true,
-					menu_id = part_category_id
+					menu_id = PlayerRandomizer.part_menu_id
 				})
 			end
 		end
@@ -600,7 +636,8 @@ if not PlayerRandomizer then
 		})
 
 		nodes[PlayerRandomizer.menu_id] = MenuHelper:BuildMenu(PlayerRandomizer.menu_id, { back_callback = "Randomizer_save" })
-		nodes[part_category_id] = MenuHelper:BuildMenu(part_category_id, { back_callback = "Randomizer_save" })
+		nodes[PlayerRandomizer.weapon_menu_id] = MenuHelper:BuildMenu(PlayerRandomizer.weapon_menu_id, { back_callback = "Randomizer_save" })
+		nodes[PlayerRandomizer.part_menu_id] = MenuHelper:BuildMenu(PlayerRandomizer.part_menu_id, { back_callback = "Randomizer_save" })
 		MenuHelper:AddMenuItem(nodes["blt_options"], PlayerRandomizer.menu_id, "Randomizer_menu_main_name", "Randomizer_menu_main_desc")
 
 	end)

@@ -9,6 +9,8 @@
 	"only_owned_weapons_desc": "Elegir solamente entre las armas que tengas compradas en tu inventario",
 	"weapon_skin_chance_name": "Probabilidad de equipar skins",
 	"weapon_skin_chance_desc": "Establecer la probabilidad de que cada arma aleatoria tenga una skin equipada",
+	"weapon_categories_name" : "Allowed weapon types",
+	"weapon_categories_desc" : "Adjust allowed weapon types to be selected by the Randomizer",
 	"part_category_chances_name" : "Probabilidad de cada parte del arma",
 	"part_category_chances_desc" : "Establecer las probabilidades de las diferentes partes del arma para que sean aleatorias",
 	"character_desc": "Aleatorizar tu personaje",
