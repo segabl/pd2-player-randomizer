@@ -48,13 +48,10 @@ if not PlayerRandomizer then
 		end
 	end
 
-	function PlayerRandomizer:set_menu_state(enabled)
+	function PlayerRandomizer:disable_menu()
 		local menu = MenuHelper:GetMenu(self.menu_id)
 		for _, item in pairs(menu and menu._items_list or {}) do
-			if item:name() == "enabled" then
-				item:set_value(self.settings.enabled and "on" or "off")
-			end
-			item:set_enabled(enabled)
+			item:set_enabled(item:type() == "customize_controller")
 		end
 	end
 
@@ -314,12 +311,10 @@ if not PlayerRandomizer then
 		if managers.chat then
 			managers.chat:_receive_message(1, managers.localization:to_upper_text("menu_system_message"), managers.localization:text(PlayerRandomizer.settings.enabled and "randomizer_enabled" or "randomizer_disabled"), tweak_data.system_chat_color)
 		end
-
-		PlayerRandomizer:set_menu_state(not Utils:IsInHeist())
 	end
 
 	function PlayerRandomizer:reroll()
-		if Utils:IsInHeist() or not PlayerRandomizer.settings.enabled then
+		if Utils:IsInHeist() or not PlayerRandomizer:allow_randomizing() then
 			return
 		end
 
@@ -350,7 +345,9 @@ if not PlayerRandomizer then
 	PlayerRandomizer:load()
 
 	Hooks:Add("MenuManagerOnOpenMenu", "MenuManagerOnOpenMenuRandomizer", function ()
-		PlayerRandomizer:set_menu_state(not Utils:IsInHeist())
+		if Utils:IsInHeist() then
+			PlayerRandomizer:disable_menu()
+		end
 	end)
 
 	Hooks:Add("LocalizationManagerPostInit", "LocalizationManagerPostInitPlayerRandomizer", function(loc)
