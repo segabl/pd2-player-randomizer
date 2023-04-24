@@ -447,6 +447,9 @@ if not PlayerRandomizer then
 			max = 1,
 			step = 0.05,
 			show_value = true,
+			display_precision = 0,
+			display_scale = 100,
+			is_percentage = true,
 			menu_id = PlayerRandomizer.menu_id,
 			priority = 95
 		}))
@@ -513,6 +516,9 @@ if not PlayerRandomizer then
 					max = 1,
 					step = 0.05,
 					show_value = true,
+					display_precision = 0,
+					display_scale = 100,
+					is_percentage = true,
 					menu_id = PlayerRandomizer.part_menu_id
 				})
 			end
