@@ -13,6 +13,18 @@ Hooks:PostHook(MultiProfileItemGui, "init", "init_player_randomizer", function (
 		return
 	end
 
+	-- Check where it's called from, if its called in crew management (due to Crewfiles mod), don't display the random button
+	local i = 3
+	while true do
+		local info = debug.getinfo(i, "S")
+		if not info then
+			break
+		elseif info.source:find("crewmanagementgui") then
+			return
+		end
+		i = i + 1
+	end
+
 	local w_increase = self.padding + self.quick_panel_w
 	self._panel:set_w(self._panel:w() + w_increase)
 	self._box_panel:set_size(self._panel:size())
