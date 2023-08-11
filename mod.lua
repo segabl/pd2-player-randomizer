@@ -49,9 +49,21 @@ if not PlayerRandomizer then
 	end
 
 	function PlayerRandomizer:disable_menu()
+		local disable_options = {
+			enabled = true,
+			only_owned_weapons = true,
+			random_primary = true,
+			random_secondary = true,
+			random_melee = true,
+			random_grenade = true,
+			random_armor = true,
+			random_deployable = true,
+		}
 		local menu = MenuHelper:GetMenu(self.menu_id)
 		for _, item in pairs(menu and menu._items_list or {}) do
-			item:set_enabled(item:type() == "customize_controller")
+			if disable_options[item:name()] then
+				item:set_enabled(false)
+			end
 		end
 	end
 
