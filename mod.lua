@@ -22,7 +22,11 @@ if not PlayerRandomizer then
 	PlayerRandomizer.part_menu_id = "PlayerRandomizerMenuPartChances"
 	PlayerRandomizer.blacklist = {
 		weapons = {},
-		mods = {}
+		mods = {},
+		melee_weapons = {},
+		throwables = {},
+		armors = {},
+		deployables = {}
 	}
 	PlayerRandomizer.required = {}
 
@@ -111,12 +115,13 @@ if not PlayerRandomizer then
 	function PlayerRandomizer:chk_setup_weapons()
 		if not self.weapons then
 			self.weapons = {}
+			local blacklisted = table.list_to_set(self.blacklist.weapons)
 			for weapon, data in pairs(tweak_data.weapon) do
 				if data.autohit then
-					local blacklisted = table.contains(self.blacklist.weapons, weapon) or self.settings["weapon_" .. data.categories[1]] == false
+					local disabled = blacklisted[weapon] or self.settings["weapon_" .. data.categories[1]] == false
 					local factory_id = managers.weapon_factory:get_factory_id_by_weapon_id(weapon)
 					local unlocked = tweak_data.weapon.factory[factory_id] and tweak_data.weapon.factory[factory_id].custom or not data.global_value or managers.dlc:is_dlc_unlocked(data.global_value)
-					if not blacklisted and unlocked then
+					if not disabled and unlocked then
 						local selection_index = data.use_data.selection_index
 						self.weapons[selection_index] = self.weapons[selection_index] or {}
 						table.insert(self.weapons[selection_index], {
@@ -166,13 +171,13 @@ if not PlayerRandomizer then
 				end
 			end
 			data.blueprint = deep_clone(data.cosmetics and tweak_data.blackmarket.weapon_skins[data.cosmetics.id].default_blueprint or tweak_data.weapon.factory[data.factory_id].default_blueprint)
+			local blacklisted = table.list_to_set(self.blacklist.mods)
 			for part_type, parts in pairs(managers.blackmarket:get_dropable_mods_by_weapon_id(data.weapon_id)) do
 				if math.random() < (self.settings[part_type .. "_chance"] or 1) then
 					local forbidden = managers.weapon_factory:_get_forbidden_parts(data.factory_id, data.blueprint)
 					local filtered_parts = table.filter_list(parts, function (part_id)
-						local blacklisted = table.contains(self.blacklist.mods, part_id[1])
 						local part = tweak_data.weapon.factory.parts[part_id[1]]
-						return not part.unatainable and not forbidden[part_id[1]] and not blacklisted and not managers.weapon_factory:_get_forbidden_parts(data.factory_id, data.blueprint)[part_id[1]] and (not part.dlc or managers.dlc:is_dlc_unlocked(part.dlc))
+						return not part.unatainable and not forbidden[part_id[1]] and not blacklisted[part_id[1]] and not managers.weapon_factory:_get_forbidden_parts(data.factory_id, data.blueprint)[part_id[1]] and (not part.dlc or managers.dlc:is_dlc_unlocked(part.dlc))
 					end)
 					local part_id = table.random(filtered_parts)
 					if part_id then
@@ -215,10 +220,11 @@ if not PlayerRandomizer then
 	function PlayerRandomizer:chk_setup_grenades()
 		if not self.grenades then
 			self.grenades = {}
+			local blacklisted = table.list_to_set(self.blacklist.throwables)
 			for grenade_id, data in pairs(tweak_data.blackmarket.projectiles) do
 				if data.throwable or data.ability then
 					local unlocked = Global.blackmarket_manager.grenades[grenade_id].unlocked and (not data.dlc or managers.dlc:is_dlc_unlocked(data.dlc))
-					if unlocked then
+					if unlocked and not blacklisted[grenade_id] then
 						table.insert(self.grenades, grenade_id)
 					end
 				end
@@ -235,9 +241,10 @@ if not PlayerRandomizer then
 	function PlayerRandomizer:chk_setup_melees()
 		if not self.melees then
 			self.melees = {}
+			local blacklisted = table.list_to_set(self.blacklist.melee_weapons)
 			for melee_weapon, data in pairs(tweak_data.blackmarket.melee_weapons) do
 				local unlocked = Global.blackmarket_manager.melee_weapons[melee_weapon].unlocked and (not data.dlc or managers.dlc:is_dlc_unlocked(data.dlc))
-				if unlocked then
+				if unlocked and not blacklisted[melee_weapon] then
 					table.insert(self.melees, melee_weapon)
 				end
 			end
@@ -253,9 +260,10 @@ if not PlayerRandomizer then
 	function PlayerRandomizer:chk_setup_armors()
 		if not self.armors then
 			self.armors = {}
-			for armor, _ in pairs(tweak_data.blackmarket.armors) do
+			local blacklisted = table.list_to_set(self.blacklist.armors)
+			for armor in pairs(tweak_data.blackmarket.armors) do
 				local unlocked = Global.blackmarket_manager.armors[armor].unlocked
-				if unlocked then
+				if unlocked and not blacklisted[armor] then
 					table.insert(self.armors, armor)
 				end
 			end
@@ -271,8 +279,9 @@ if not PlayerRandomizer then
 	function PlayerRandomizer:chk_setup_deployables()
 		if not self.deployables then
 			self.deployables = {}
-			for deployable, data in pairs(tweak_data.equipments) do
-				if data.visual_object then
+			local blacklisted = table.list_to_set(self.blacklist.deployables)
+			for deployable in pairs(tweak_data.blackmarket.deployables) do
+				if not blacklisted[deployable] then
 					table.insert(self.deployables, deployable)
 				end
 			end
