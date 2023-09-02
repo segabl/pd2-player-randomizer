@@ -44,13 +44,14 @@ function TeamLoadoutItem:set_slot_outfit(slot, criminal_name, outfit, ...)
 	if slot ~= peer_id or not outfit or not PlayerRandomizer.settings.hide_selections then
 		return set_slot_outfit_original(self, slot, criminal_name, outfit, ...)
 	end
+	local profile_settings = PlayerRandomizer:current_profile_settings()
 	local new_outfit = deep_clone(outfit)
-	new_outfit.primary.factory_id = not (PlayerRandomizer.settings.random_primary and PlayerRandomizer:allow_randomizing()) and new_outfit.primary.factory_id
-	new_outfit.secondary.factory_id = not (PlayerRandomizer.settings.random_secondary and PlayerRandomizer:allow_randomizing()) and new_outfit.secondary.factory_id
-	new_outfit.melee_weapon = not (PlayerRandomizer.settings.random_melee and PlayerRandomizer:allow_randomizing()) and new_outfit.melee_weapon
-	new_outfit.grenade = not (PlayerRandomizer.settings.random_grenade and PlayerRandomizer:allow_randomizing()) and new_outfit.grenade
-	new_outfit.armor = not (PlayerRandomizer.settings.random_armor and PlayerRandomizer:allow_randomizing()) and new_outfit.armor
-	new_outfit.deployable = not (PlayerRandomizer.settings.random_deployable and PlayerRandomizer:allow_randomizing()) and new_outfit.deployable
+	new_outfit.primary.factory_id = not (profile_settings.random_primary and PlayerRandomizer:allow_randomizing()) and new_outfit.primary.factory_id
+	new_outfit.secondary.factory_id = not (profile_settings.random_secondary and PlayerRandomizer:allow_randomizing()) and new_outfit.secondary.factory_id
+	new_outfit.melee_weapon = not (profile_settings.random_melee and PlayerRandomizer:allow_randomizing()) and new_outfit.melee_weapon
+	new_outfit.grenade = not (profile_settings.random_grenade and PlayerRandomizer:allow_randomizing()) and new_outfit.grenade
+	new_outfit.armor = not (profile_settings.random_armor and PlayerRandomizer:allow_randomizing()) and new_outfit.armor
+	new_outfit.deployable = not (profile_settings.random_deployable and PlayerRandomizer:allow_randomizing()) and new_outfit.deployable
 	return set_slot_outfit_original(self, slot, criminal_name, new_outfit, ...)
 end
 

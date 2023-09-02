@@ -39,11 +39,9 @@ Hooks:PostHook(MultiProfileItemGui, "init", "init_player_randomizer", function (
 		h = self.quick_panel_h
 	})
 
-	local color = PlayerRandomizer.settings.enabled and tweak_data.screen_colors.button_stage_3 or Color(0.25, 0.25, 0.25)
-
 	self._randomizer_panel:bitmap({
 		texture = "guis/textures/pd2/dice_icon",
-		color = color,
+		color = tweak_data.screen_colors.button_stage_3,
 		x = self.padding,
 		y = self.padding,
 		w = self.quick_panel_w - self.padding * 2,
@@ -53,7 +51,7 @@ Hooks:PostHook(MultiProfileItemGui, "init", "init_player_randomizer", function (
 	self._randomizer_panel:polyline({
 		layer = 1,
 		line_width = 3,
-		color = color,
+		color = tweak_data.screen_colors.button_stage_3,
 		points = {
 			Vector3(self.padding * 1.5, self.quick_panel_h - self.padding * 1.5, 0),
 			Vector3(self.quick_panel_w - self.padding * 1.5, self.padding * 1.5, 0)
@@ -76,7 +74,7 @@ Hooks:PostHook(MultiProfileItemGui, "mouse_moved", "mouse_moved_player_randomize
 		if self._randomizer_panel:inside(x, y) then
 			if self._is_randomizer_selected ~= true then
 				for _, element in pairs(self._randomizer_panel:children()) do
-					element:set_color(PlayerRandomizer.settings.enabled and tweak_data.screen_colors.button_stage_2 or Color(0.5, 0.5, 0.5))
+					element:set_color(tweak_data.screen_colors.button_stage_2)
 				end
 
 				managers.menu_component:post_event("highlight")
@@ -89,7 +87,7 @@ Hooks:PostHook(MultiProfileItemGui, "mouse_moved", "mouse_moved_player_randomize
 			return true, "link"
 		elseif self._is_randomizer_selected == true then
 			for _, element in pairs(self._randomizer_panel:children()) do
-				element:set_color(PlayerRandomizer.settings.enabled and tweak_data.screen_colors.button_stage_3 or Color(0.25, 0.25, 0.25))
+				element:set_color(tweak_data.screen_colors.button_stage_3)
 			end
 
 			self._is_randomizer_selected = false
@@ -99,11 +97,6 @@ end)
 
 Hooks:PostHook(MultiProfileItemGui, "mouse_pressed", "mouse_pressed_player_randomizer", function (self, button, x, y)
 	if button == Idstring("0") and self:arrow_selection() == "randomizer" then
-		PlayerRandomizer:set_current_profile_randomized(not PlayerRandomizer:is_current_profile_randomized())
-		PlayerRandomizer:update_outfit()
-		PlayerRandomizer:save()
-		managers.menu_component:post_event("menu_enter")
+		PlayerRandomizer:show_profile_settings(self)
 	end
-
-	self:_update_randomizer_state()
 end)

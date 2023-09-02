@@ -1,8 +1,8 @@
 {
 	"Randomizer_menu_main_name": "玩家装备随机",
 	"Randomizer_menu_main_desc": "劫案开始时随机你的装备",
+	"randomizer_settings_for_profile": "Randomizer settings for \"$PROFILE\"",
 	"enabled_name": "启用",
-	"enabled_desc": "切换随机开/关",
 	"hide_selections_name": "隐藏随机结果",
 	"hide_selections_desc": "在预计划页面隐藏随机到的装备",
 	"only_owned_weapons_name": "仅限装备库武器",
@@ -26,11 +26,7 @@
 	"display_weapon_info_desc": "绑定按键以显示当前装备的武器信息",
 	"weapon_info_string": "$WEAPON 使用 $MODS改装",
 	"weapon_info_string_default": "$WEAPON 无改装",
-	"toggle_randomizer_name": "随机开关",
-	"toggle_randomizer_desc": "绑定按键以切换启用/禁用随机",
 	"reroll_randomizer_name": "重新随机",
 	"reroll_randomizer_desc": "绑定按键以重新随机",
-	"randomizer_enabled": "启用随机",
-	"randomizer_disabled": "禁用随机",
 	"randomizer_rerolled": "重新随机"
 }

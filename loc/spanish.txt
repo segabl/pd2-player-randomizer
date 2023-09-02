@@ -1,8 +1,8 @@
 {
 	"Randomizer_menu_main_name": "Player Randomizer",
 	"Randomizer_menu_main_desc": "Aleatorizar tu equipamiento al inicio de cada atraco",
+	"randomizer_settings_for_profile": "Randomizer settings for \"$PROFILE\"",
 	"enabled_name": "Activado",
-	"enabled_desc": "Activar / desactivar el aleatorizador",
 	"hide_selections_name": "Ocultar selecciones aleatorias",
 	"hide_selections_desc": "Mostrar / ocultar las selecciones aleatorias en la sala de preparación del atraco",
 	"only_owned_weapons_name": "Solo armas del inventario",
@@ -26,11 +26,7 @@
 	"display_weapon_info_desc": "Vincular una tecla específica para mostrar información sobre el arma equipada y sus modificaciones",
 	"weapon_info_string": "Estás usando el arma '$WEAPON' con las siguientes modificaciones: $MODS.",
 	"weapon_info_string_default": "Estás usando el arma '$WEAPON' con las modificaciones predeterminadas.",
-	"toggle_randomizer_name": "Activar / desactivar aleatorizador",
-	"toggle_randomizer_desc": "Vincular una tecla específica para activar / desactivar el aleatorizador",
 	"reroll_randomizer_name": "Nuevo equipamiento aleatorio",
 	"reroll_randomizer_desc": "Vincular una tecla específica para obtener un nuevo equipamiento aleatorio",
-	"randomizer_enabled": "Aleatorizador ACTIVADO",
-	"randomizer_disabled": "Aleatorizador DESACTIVADO",
 	"randomizer_rerolled": "Nuevo equipamiento aleatorio seleccionado"
 }

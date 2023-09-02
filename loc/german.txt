@@ -1,8 +1,8 @@
 {
 	"Randomizer_menu_main_name": "Player Randomizer",
 	"Randomizer_menu_main_desc": "Lasse deine Ausrüstung zu Beginn des Spiels zufällig gewählt werden",
-	"enabled_name": "Aktiviert",
-	"enabled_desc": "Schalte den Randomizer ein oder aus",
+	"randomizer_settings_for_profile": "Randomizer Einstellungen für \"$PROFILE\"",
+	"enabled_name": "Randomizer aktiviert",
 	"hide_selections_name": "Zufällig gewählte Auswahl verbergen",
 	"hide_selections_desc": "Verbirgt zufällig gewählte Auswahl im Ausrüstungsbildschirm",
 	"only_owned_weapons_name": "Nur Waffen aus Inventar",
@@ -26,11 +26,7 @@
 	"display_weapon_info_desc": "Taste um Informationen über die momentane Waffe anzuzeigen",
 	"weapon_info_string": "Benutze $WEAPON mit $MODS",
 	"weapon_info_string_default": "Benutze $WEAPON mit Standardmods",
-	"toggle_randomizer_name": "Randomizer umschalten",
-	"toggle_randomizer_desc": "Taste um Randomizer ein/auszuschalten",
 	"reroll_randomizer_name": "Randomizer neu mischen",
 	"reroll_randomizer_desc": "Taste um den Randomizer neu zu mischen",
-	"randomizer_enabled": "Randomizer aktiviert",
-	"randomizer_disabled": "Randomizer deaktiviert",
 	"randomizer_rerolled": "Randomizer neu gemischt"
 }

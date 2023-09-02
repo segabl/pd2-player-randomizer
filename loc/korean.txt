@@ -1,8 +1,8 @@
 {
 	"Randomizer_menu_main_name": "플레이어 랜더마이저",
 	"Randomizer_menu_main_desc": "하이스트를 시작할때 장비를 무작위로 선택해줍니다",
+	"randomizer_settings_for_profile": "Randomizer settings for \"$PROFILE\"",
 	"enabled_name": "켜기",
-	"enabled_desc": "랜더마이저를 켜고 끄고 합니다",
 	"hide_selections_name": "선택된 무기 숨기기",
 	"hide_selections_desc": "로드아웃에서 무슨 무기가 선택되었는지 보여주지 않습니다",
 	"only_owned_weapons_name": "인벤토리에 있는 무기만 사용",
@@ -26,11 +26,7 @@
 	"display_weapon_info_desc": "Keybind to show information about the currently equipped weapon",
 	"weapon_info_string": "Using $WEAPON with $MODS",
 	"weapon_info_string_default": "Using $WEAPON with default mods",
-	"toggle_randomizer_name": "Toggle Randomizer",
-	"toggle_randomizer_desc": "Keybind to enable/disable the randomizer",
 	"reroll_randomizer_name": "Reroll Randomizer",
 	"reroll_randomizer_desc": "Keybind to reroll the randomizer",
-	"randomizer_enabled": "Randomizer enabled",
-	"randomizer_disabled": "Randomizer disabled",
 	"randomizer_rerolled": "Randomizer rerolled"
 }

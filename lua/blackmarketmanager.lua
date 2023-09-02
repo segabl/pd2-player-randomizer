@@ -25,7 +25,7 @@ end
 
 local forced_primary_original = BlackMarketManager.forced_primary
 function BlackMarketManager:forced_primary(...)
-	if not PlayerRandomizer.settings.random_primary or not PlayerRandomizer:allow_randomizing() then
+	if not PlayerRandomizer:current_profile_settings().random_primary or not PlayerRandomizer:allow_randomizing() then
 		return forced_primary_original(self, ...)
 	end
 	return PlayerRandomizer.settings.only_owned_weapons and PlayerRandomizer:get_random_weapon_owned(2) or PlayerRandomizer:get_random_weapon(2)
@@ -33,7 +33,7 @@ end
 
 local forced_secondary_original = BlackMarketManager.forced_secondary
 function BlackMarketManager:forced_secondary(...)
-	if not PlayerRandomizer.settings.random_secondary or not PlayerRandomizer:allow_randomizing() then
+	if not PlayerRandomizer:current_profile_settings().random_secondary or not PlayerRandomizer:allow_randomizing() then
 		return forced_secondary_original(self, ...)
 	end
 	return PlayerRandomizer.settings.only_owned_weapons and PlayerRandomizer:get_random_weapon_owned(1) or PlayerRandomizer:get_random_weapon(1)
@@ -41,7 +41,7 @@ end
 
 local forced_throwable_original = BlackMarketManager.forced_throwable
 function BlackMarketManager:forced_throwable(...)
-	if not PlayerRandomizer.settings.random_grenade or not PlayerRandomizer:allow_randomizing() then
+	if not PlayerRandomizer:current_profile_settings().random_grenade or not PlayerRandomizer:allow_randomizing() then
 		return forced_throwable_original(self, ...)
 	end
 	return PlayerRandomizer:get_random_grenade()
@@ -57,7 +57,7 @@ function BlackMarketManager:equipped_melee_weapon(...)
 end
 
 function BlackMarketManager:forced_melee_weapon(...)
-	if not PlayerRandomizer.settings.random_melee or not PlayerRandomizer:allow_randomizing() then
+	if not PlayerRandomizer:current_profile_settings().random_melee or not PlayerRandomizer:allow_randomizing() then
 		return
 	end
 	return PlayerRandomizer:get_random_melee()
@@ -65,7 +65,7 @@ end
 
 local forced_armor_original = BlackMarketManager.forced_armor
 function BlackMarketManager:forced_armor(...)
-	if not PlayerRandomizer.settings.random_armor or not PlayerRandomizer:allow_randomizing() then
+	if not PlayerRandomizer:current_profile_settings().random_armor or not PlayerRandomizer:allow_randomizing() then
 		return forced_armor_original(self, ...)
 	end
 	return PlayerRandomizer:get_random_armor()
@@ -73,7 +73,7 @@ end
 
 local forced_deployable_original = BlackMarketManager.forced_deployable
 function BlackMarketManager:forced_deployable(...)
-	if not PlayerRandomizer.settings.random_deployable or not PlayerRandomizer:allow_randomizing() then
+	if not PlayerRandomizer:current_profile_settings().random_deployable or not PlayerRandomizer:allow_randomizing() then
 		return forced_deployable_original(self, ...)
 	end
 	return PlayerRandomizer:get_random_deployable()

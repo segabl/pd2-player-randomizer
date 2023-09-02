@@ -1,8 +1,8 @@
 {
 	"Randomizer_menu_main_name": "Player Randomizer",
 	"Randomizer_menu_main_desc": "Рандомизируйте вашу экипировку перед каждым ограблением",
-	"enabled_name": "Enabled",
-	"enabled_desc": "Toggle the Randomizer on or off",
+	"randomizer_settings_for_profile": "Randomizer settings for \"$PROFILE\"",
+	"enabled_name": "Enable randomizer",
 	"hide_selections_name": "Спрятать рандомизированный выбор",
 	"hide_selections_desc": "Спрятать рандомизированный выбор в меню снаряжения",
 	"only_owned_weapons_name": "Только оружие из инвентаря",
@@ -26,11 +26,7 @@
 	"display_weapon_info_desc": "Keybind to show information about the currently equipped weapon",
 	"weapon_info_string": "Using $WEAPON with $MODS",
 	"weapon_info_string_default": "Using $WEAPON with default mods",
-	"toggle_randomizer_name": "Toggle Randomizer",
-	"toggle_randomizer_desc": "Keybind to enable/disable the randomizer",
 	"reroll_randomizer_name": "Reroll Randomizer",
 	"reroll_randomizer_desc": "Keybind to reroll the randomizer",
-	"randomizer_enabled": "Randomizer enabled",
-	"randomizer_disabled": "Randomizer disabled",
 	"randomizer_rerolled": "Randomizer rerolled"
 }

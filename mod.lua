@@ -2,16 +2,9 @@ if not PlayerRandomizer then
 
 	PlayerRandomizer = {}
 	PlayerRandomizer.settings = {
-		enabled = true,
 		hide_selections = true,
 		only_owned_weapons = false,
 		weapon_skin_chance = 0.5,
-		random_primary = true,
-		random_secondary = true,
-		random_melee = true,
-		random_grenade = true,
-		random_armor = true,
-		random_deployable = true,
 		random_reticle = true
 	}
 	PlayerRandomizer.save_path = SavePath
@@ -54,14 +47,7 @@ if not PlayerRandomizer then
 
 	function PlayerRandomizer:disable_menu()
 		local disable_options = {
-			enabled = true,
-			only_owned_weapons = true,
-			random_primary = true,
-			random_secondary = true,
-			random_melee = true,
-			random_grenade = true,
-			random_armor = true,
-			random_deployable = true,
+			only_owned_weapons = true
 		}
 		local menu = MenuHelper:GetMenu(self.menu_id)
 		for _, item in pairs(menu and menu._items_list or {}) do
@@ -71,28 +57,125 @@ if not PlayerRandomizer then
 		end
 	end
 
-	function PlayerRandomizer:is_current_profile_randomized()
-		return managers.multi_profile and self.settings["profile_" .. tostring(managers.multi_profile._global._current_profile)]
+	function PlayerRandomizer:show_profile_settings(multi_profile_item_gui)
+		local new_settings = clone(self:current_profile_settings())
+
+		managers.system_menu:show({
+			title = managers.localization:text("randomizer_settings_for_profile", { PROFILE = managers.multi_profile:current_profile_name() }),
+			button_list = {
+				{
+					text = managers.localization:text("enabled_name"),
+					toggle = true,
+					no_close = true,
+					initial_toggle_state = new_settings.enabled and true or false,
+					toggle_callback_func = function () new_settings.enabled = not new_settings.enabled end
+				},
+				{
+					no_text = true,
+					no_selection = true
+				},
+				{
+					text = managers.localization:text("primary_desc"),
+					toggle = true,
+					no_close = true,
+					initial_toggle_state = new_settings.random_primary and true or false,
+					toggle_callback_func = function () new_settings.random_primary = not new_settings.random_primary end
+				},
+				{
+					text = managers.localization:text("secondary_desc"),
+					toggle = true,
+					no_close = true,
+					initial_toggle_state = new_settings.random_secondary and true or false,
+					toggle_callback_func = function () new_settings.random_secondary = not new_settings.random_secondary end
+				},
+				{
+					text = managers.localization:text("melee_desc"),
+					toggle = true,
+					no_close = true,
+					initial_toggle_state = new_settings.random_melee and true or false,
+					toggle_callback_func = function () new_settings.random_melee = not new_settings.random_melee end
+				},
+				{
+					text = managers.localization:text("grenade_desc"),
+					toggle = true,
+					no_close = true,
+					initial_toggle_state = new_settings.random_grenade and true or false,
+					toggle_callback_func = function () new_settings.random_grenade = not new_settings.random_grenade end
+				},
+				{
+					text = managers.localization:text("armor_desc"),
+					toggle = true,
+					no_close = true,
+					initial_toggle_state = new_settings.random_armor and true or false,
+					toggle_callback_func = function () new_settings.random_armor = not new_settings.random_armor end
+				},
+				{
+					text = managers.localization:text("deployable_desc"),
+					toggle = true,
+					no_close = true,
+					initial_toggle_state = new_settings.random_deployable and true or false,
+					toggle_callback_func = function () new_settings.random_deployable = not new_settings.random_deployable end
+				},
+				{
+					no_text = true,
+					no_selection = true
+				},
+				{
+					text = managers.localization:text("dialog_ok"),
+					callback_func = function ()
+						PlayerRandomizer:set_current_profile_settings(new_settings)
+						multi_profile_item_gui:_update_randomizer_state()
+					end
+				},
+				{
+					text = managers.localization:text("dialog_cancel"),
+					cancel_button = true
+				}
+			}
+		})
 	end
 
-	function PlayerRandomizer:set_current_profile_randomized(randomized)
-		if managers.multi_profile then
-			self.settings["profile_" .. tostring(managers.multi_profile._global._current_profile)] = randomized
+	function PlayerRandomizer:current_profile_settings()
+		local profile_settings = managers.multi_profile and self.settings["profile_" .. tostring(managers.multi_profile._global._current_profile)]
+
+		if type(profile_settings) ~= "table" then
+			profile_settings = {
+				enabled = profile_settings == true,
+				random_primary = Utils:FirstNonNil(self.settings.random_primary, true),
+				random_secondary = Utils:FirstNonNil(self.settings.random_secondary, true),
+				random_melee = Utils:FirstNonNil(self.settings.random_melee, true),
+				random_grenade = Utils:FirstNonNil(self.settings.random_grenade, true),
+				random_armor = Utils:FirstNonNil(self.settings.random_armor, true),
+				random_deployable = Utils:FirstNonNil(self.settings.random_deployable, true)
+			}
 		end
+
+		return profile_settings
+	end
+
+	function PlayerRandomizer:set_current_profile_settings(new_settings)
+		self.settings["profile_" .. tostring(managers.multi_profile._global._current_profile)] = new_settings
+		self:update_outfit()
+		self:save()
+	end
+
+	function PlayerRandomizer:is_current_profile_randomized()
+		return self:current_profile_settings().enabled
 	end
 
 	function PlayerRandomizer:allow_randomizing()
-		return self.settings.enabled and Utils:IsInGameState() and self:is_current_profile_randomized()
+		return Utils:IsInGameState() and self:is_current_profile_randomized()
 	end
 
 	function PlayerRandomizer:is_randomized(selection)
+		local profile_settings = self:current_profile_settings()
 		local mapping = {
-			[1] = self.settings.random_primary,
-			[2] = self.settings.random_secondary,
-			[3] = self.settings.random_melee,
-			[4] = self.settings.random_grenade,
-			[5] = self.settings.random_armor,
-			[6] = self.settings.random_deployable
+			[1] = profile_settings.random_primary,
+			[2] = profile_settings.random_secondary,
+			[3] = profile_settings.random_melee,
+			[4] = profile_settings.random_grenade,
+			[5] = profile_settings.random_armor,
+			[6] = profile_settings.random_deployable
 		}
 		return mapping[selection] and PlayerRandomizer:allow_randomizing()
 	end
@@ -113,120 +196,135 @@ if not PlayerRandomizer then
 	end
 
 	function PlayerRandomizer:chk_setup_weapons()
-		if not self.weapons then
-			self.weapons = {}
-			local blacklisted = table.list_to_set(self.blacklist.weapons)
-			for weapon, data in pairs(tweak_data.weapon) do
-				if data.autohit then
-					local disabled = blacklisted[weapon] or self.settings["weapon_" .. data.categories[1]] == false
-					local factory_id = managers.weapon_factory:get_factory_id_by_weapon_id(weapon)
-					local unlocked = tweak_data.weapon.factory[factory_id] and tweak_data.weapon.factory[factory_id].custom or not data.global_value or managers.dlc:is_dlc_unlocked(data.global_value)
-					if not disabled and unlocked then
-						local selection_index = data.use_data.selection_index
-						self.weapons[selection_index] = self.weapons[selection_index] or {}
-						table.insert(self.weapons[selection_index], {
-							selection_index = selection_index,
-							weapon_id = weapon,
-							factory_id = factory_id,
-							equipped = true
-						})
-					end
+		if self.weapons and self.colors then
+			return
+		end
+
+		self.weapons = {}
+
+		local blacklisted = table.list_to_set(self.blacklist.weapons)
+		for weapon, data in pairs(tweak_data.weapon) do
+			if data.autohit then
+				local disabled = blacklisted[weapon] or self.settings["weapon_" .. data.categories[1]] == false
+				if not disabled and Global.blackmarket_manager.weapons[weapon].unlocked then
+					local selection_index = data.use_data.selection_index
+					self.weapons[selection_index] = self.weapons[selection_index] or {}
+					table.insert(self.weapons[selection_index], {
+						selection_index = selection_index,
+						weapon_id = weapon,
+						factory_id = managers.weapon_factory:get_factory_id_by_weapon_id(weapon),
+						equipped = true
+					})
 				end
 			end
 		end
-		if not self.colors then
-			self.colors = table.filter_list(tweak_data.blackmarket.weapon_colors, function (v)
-				local color_tweak = tweak_data.blackmarket.weapon_skins[v]
-				local dlc = color_tweak.dlc or managers.dlc:global_value_to_dlc(color_tweak.global_value)
-				local unlocked = not dlc or managers.dlc:is_dlc_unlocked(dlc)
-				local have_color = managers.blackmarket:has_item(color_tweak.global_value, "weapon_skins", v)
-				return unlocked and have_color
-			end)
-		end
+
+		self.colors = table.filter_list(tweak_data.blackmarket.weapon_colors, function (v)
+			local color_tweak = tweak_data.blackmarket.weapon_skins[v]
+			local dlc = color_tweak.dlc or managers.dlc:global_value_to_dlc(color_tweak.global_value)
+			local unlocked = not dlc or managers.dlc:is_dlc_unlocked(dlc)
+			local have_color = managers.blackmarket:has_item(color_tweak.global_value, "weapon_skins", v)
+			return unlocked and have_color
+		end)
 	end
 
 	function PlayerRandomizer:get_random_weapon(selection_index)
 		self:chk_setup_weapons()
+
 		self._random_weapon = self._random_weapon or {}
-		if not self._random_weapon[selection_index] then
-			local data = self.weapons[selection_index][math.random(#self.weapons[selection_index])]
-			if math.random() < self.settings.weapon_skin_chance then
-				local skins = managers.blackmarket:get_cosmetics_instances_by_weapon_id(data.weapon_id)
-				if #skins > 0 and math.random(#skins + #self.colors) <= #skins then
-					local inst = table.random(skins)
-					local inst_data = managers.blackmarket._global.inventory_tradable[inst]
-					data.cosmetics = {
-						bonus = inst_data.bonus,
-						id = inst_data.entry,
-						instance_id = inst,
-						quality = inst_data.quality
-					}
-				elseif #self.colors > 0 then
-					local inst = table.random(self.colors)
-					data.cosmetics = {
-						id = inst,
-						quality = table.random_key(tweak_data.economy.qualities),
-						color_index = math.random(#tweak_data.blackmarket.weapon_skins[inst])
-					}
-				end
-			end
-			data.blueprint = deep_clone(data.cosmetics and tweak_data.blackmarket.weapon_skins[data.cosmetics.id].default_blueprint or tweak_data.weapon.factory[data.factory_id].default_blueprint)
-			local blacklisted = table.list_to_set(self.blacklist.mods)
-			for part_type, parts in pairs(managers.blackmarket:get_dropable_mods_by_weapon_id(data.weapon_id)) do
-				if math.random() < (self.settings[part_type .. "_chance"] or 1) then
-					local forbidden = managers.weapon_factory:_get_forbidden_parts(data.factory_id, data.blueprint)
-					local filtered_parts = table.filter_list(parts, function (part_id)
-						local part = tweak_data.weapon.factory.parts[part_id[1]]
-						return not part.unatainable and not forbidden[part_id[1]] and not blacklisted[part_id[1]] and not managers.weapon_factory:_get_forbidden_parts(data.factory_id, data.blueprint)[part_id[1]] and (not part.dlc or managers.dlc:is_dlc_unlocked(part.dlc))
-					end)
-					local part_id = table.random(filtered_parts)
-					if part_id then
-						managers.weapon_factory:change_part_blueprint_only(data.factory_id, part_id[1], data.blueprint)
-					end
-				end
-			end
-			self._random_weapon[selection_index] = data
+		if self._random_weapon[selection_index] then
+			return self._random_weapon[selection_index]
 		end
-		return self._random_weapon[selection_index]
+
+		local data = self.weapons[selection_index][math.random(#self.weapons[selection_index])]
+		if math.random() < self.settings.weapon_skin_chance then
+			local skins = managers.blackmarket:get_cosmetics_instances_by_weapon_id(data.weapon_id)
+			if #skins > 0 and math.random(#skins + #self.colors) <= #skins then
+				local inst = table.random(skins)
+				local inst_data = managers.blackmarket._global.inventory_tradable[inst]
+				data.cosmetics = {
+					bonus = inst_data.bonus,
+					id = inst_data.entry,
+					instance_id = inst,
+					quality = inst_data.quality
+				}
+			elseif #self.colors > 0 then
+				local inst = table.random(self.colors)
+				data.cosmetics = {
+					id = inst,
+					quality = table.random_key(tweak_data.economy.qualities),
+					color_index = math.random(#tweak_data.blackmarket.weapon_skins[inst])
+				}
+			end
+		end
+		data.blueprint = clone(data.cosmetics and tweak_data.blackmarket.weapon_skins[data.cosmetics.id].default_blueprint or tweak_data.weapon.factory[data.factory_id].default_blueprint)
+
+		local blacklisted = table.list_to_set(self.blacklist.mods)
+		for part_type, parts in pairs(managers.blackmarket:get_dropable_mods_by_weapon_id(data.weapon_id)) do
+			if math.random() < (self.settings[part_type .. "_chance"] or 1) then
+				local forbidden = managers.weapon_factory:_get_forbidden_parts(data.factory_id, data.blueprint)
+				local filtered_parts = table.filter_list(parts, function (part)
+					local part_id = part[1]
+					local part_data = tweak_data.weapon.factory.parts[part_id]
+					return not part_data.unatainable and not forbidden[part_id] and not blacklisted[part_id] and not managers.weapon_factory:_get_forbidden_parts(data.factory_id, data.blueprint)[part_id]
+				end)
+				local part = table.random(filtered_parts)
+				if part then
+					managers.weapon_factory:change_part_blueprint_only(data.factory_id, part[1], data.blueprint)
+				end
+			end
+		end
+
+		self._random_weapon[selection_index] = data
+
+		return data
 	end
 
 	function PlayerRandomizer:chk_setup_weapons_owned()
-		if not self.weapons_owned then
-			self.weapons_owned = { {}, {} }
-			for slot, data in pairs(Global.blackmarket_manager.crafted_items["primaries"]) do
-				local unlocked = managers.blackmarket:weapon_unlocked_by_crafted("primaries", slot)
-				if unlocked then
-					data.slot = slot
-					table.insert(self.weapons_owned[2], data)
-				end
+		if self.weapons_owned then
+			return
+		end
+
+		self.weapons_owned = { {}, {} }
+
+		for slot, data in pairs(Global.blackmarket_manager.crafted_items["primaries"]) do
+			local unlocked = managers.blackmarket:weapon_unlocked_by_crafted("primaries", slot)
+			if unlocked then
+				data.slot = slot
+				table.insert(self.weapons_owned[2], data)
 			end
-			for slot, data in pairs(Global.blackmarket_manager.crafted_items["secondaries"]) do
-				local unlocked = managers.blackmarket:weapon_unlocked_by_crafted("secondaries", slot)
-				if unlocked then
-					data.slot = slot
-					table.insert(self.weapons_owned[1], data)
-				end
+		end
+
+		for slot, data in pairs(Global.blackmarket_manager.crafted_items["secondaries"]) do
+			local unlocked = managers.blackmarket:weapon_unlocked_by_crafted("secondaries", slot)
+			if unlocked then
+				data.slot = slot
+				table.insert(self.weapons_owned[1], data)
 			end
 		end
 	end
 
 	function PlayerRandomizer:get_random_weapon_owned(selection_index)
 		self:chk_setup_weapons_owned()
+
 		self._random_weapon_owned = self._random_weapon_owned or {}
 		self._random_weapon_owned[selection_index] = self._random_weapon_owned[selection_index] or table.random(self.weapons_owned[selection_index])
 		return self._random_weapon_owned[selection_index]
 	end
 
 	function PlayerRandomizer:chk_setup_grenades()
-		if not self.grenades then
-			self.grenades = {}
-			local blacklisted = table.list_to_set(self.blacklist.throwables)
-			for grenade_id, data in pairs(tweak_data.blackmarket.projectiles) do
-				if data.throwable or data.ability then
-					local unlocked = Global.blackmarket_manager.grenades[grenade_id].unlocked and (not data.dlc or managers.dlc:is_dlc_unlocked(data.dlc))
-					if unlocked and not blacklisted[grenade_id] then
-						table.insert(self.grenades, grenade_id)
-					end
+		if self.grenades then
+			return
+		end
+
+		self.grenades = {}
+
+		local blacklisted = table.list_to_set(self.blacklist.throwables)
+		for grenade_id, data in pairs(tweak_data.blackmarket.projectiles) do
+			if data.throwable or data.ability then
+				local unlocked = Global.blackmarket_manager.grenades[grenade_id].unlocked and (not data.dlc or managers.dlc:is_dlc_unlocked(data.dlc))
+				if unlocked and not blacklisted[grenade_id] then
+					table.insert(self.grenades, grenade_id)
 				end
 			end
 		end
@@ -234,62 +332,74 @@ if not PlayerRandomizer then
 
 	function PlayerRandomizer:get_random_grenade()
 		self:chk_setup_grenades()
+
 		self._random_grenade = self._random_grenade or self.grenades[math.random(#self.grenades)]
 		return self._random_grenade
 	end
 
 	function PlayerRandomizer:chk_setup_melees()
-		if not self.melees then
-			self.melees = {}
-			local blacklisted = table.list_to_set(self.blacklist.melee_weapons)
-			for melee_weapon, data in pairs(tweak_data.blackmarket.melee_weapons) do
-				local unlocked = Global.blackmarket_manager.melee_weapons[melee_weapon].unlocked and (not data.dlc or managers.dlc:is_dlc_unlocked(data.dlc))
-				if unlocked and not blacklisted[melee_weapon] then
-					table.insert(self.melees, melee_weapon)
-				end
+		if self.melees then
+			return
+		end
+
+		self.melees = {}
+
+		local blacklisted = table.list_to_set(self.blacklist.melee_weapons)
+		for melee_weapon, data in pairs(tweak_data.blackmarket.melee_weapons) do
+			local unlocked = Global.blackmarket_manager.melee_weapons[melee_weapon].unlocked and (not data.dlc or managers.dlc:is_dlc_unlocked(data.dlc))
+			if unlocked and not blacklisted[melee_weapon] then
+				table.insert(self.melees, melee_weapon)
 			end
 		end
 	end
 
 	function PlayerRandomizer:get_random_melee()
 		self:chk_setup_melees()
+
 		self._random_melee = self._random_melee or self.melees[math.random(#self.melees)]
 		return self._random_melee
 	end
 
 	function PlayerRandomizer:chk_setup_armors()
-		if not self.armors then
-			self.armors = {}
-			local blacklisted = table.list_to_set(self.blacklist.armors)
-			for armor in pairs(tweak_data.blackmarket.armors) do
-				local unlocked = Global.blackmarket_manager.armors[armor].unlocked
-				if unlocked and not blacklisted[armor] then
-					table.insert(self.armors, armor)
-				end
+		if self.armors then
+			return
+		end
+
+		self.armors = {}
+
+		local blacklisted = table.list_to_set(self.blacklist.armors)
+		for armor in pairs(tweak_data.blackmarket.armors) do
+			local unlocked = Global.blackmarket_manager.armors[armor].unlocked
+			if unlocked and not blacklisted[armor] then
+				table.insert(self.armors, armor)
 			end
 		end
 	end
 
 	function PlayerRandomizer:get_random_armor()
 		self:chk_setup_armors()
+
 		self._random_armor = self._random_armor or self.armors[math.random(#self.armors)]
 		return self._random_armor
 	end
 
 	function PlayerRandomizer:chk_setup_deployables()
-		if not self.deployables then
-			self.deployables = {}
-			local blacklisted = table.list_to_set(self.blacklist.deployables)
-			for deployable in pairs(tweak_data.blackmarket.deployables) do
-				if not blacklisted[deployable] then
-					table.insert(self.deployables, deployable)
-				end
+		if self.deployables then
+			return
+		end
+
+		self.deployables = {}
+		local blacklisted = table.list_to_set(self.blacklist.deployables)
+		for deployable in pairs(tweak_data.blackmarket.deployables) do
+			if not blacklisted[deployable] then
+				table.insert(self.deployables, deployable)
 			end
 		end
 	end
 
 	function PlayerRandomizer:get_random_deployable()
 		self:chk_setup_deployables()
+
 		self._random_deployable = self._random_deployable or self.deployables[math.random(#self.deployables)]
 		return self._random_deployable
 	end
@@ -318,20 +428,6 @@ if not PlayerRandomizer then
 		local loc_str = table.size(blueprint) == 0 and "weapon_info_string_default" or "weapon_info_string"
 		local weap_info = managers.localization:text(loc_str, { WEAPON = w_name, MODS = table.concat(table.map_values(blueprint), ", ") })
 		managers.chat:_receive_message(1, managers.localization:to_upper_text("menu_system_message"), weap_info, tweak_data.system_chat_color)
-	end
-
-	function PlayerRandomizer:toggle()
-		if Utils:IsInHeist() then
-			return
-		end
-
-		PlayerRandomizer.settings.enabled = not PlayerRandomizer.settings.enabled
-		PlayerRandomizer:update_outfit()
-		PlayerRandomizer:save()
-
-		if managers.chat then
-			managers.chat:_receive_message(1, managers.localization:to_upper_text("menu_system_message"), managers.localization:text(PlayerRandomizer.settings.enabled and "randomizer_enabled" or "randomizer_disabled"), tweak_data.system_chat_color)
-		end
 	end
 
 	function PlayerRandomizer:reroll()
@@ -413,21 +509,6 @@ if not PlayerRandomizer then
 		MenuHelper:NewMenu(PlayerRandomizer.menu_id)
 		MenuHelper:NewMenu(PlayerRandomizer.weapon_menu_id)
 		MenuHelper:NewMenu(PlayerRandomizer.part_menu_id)
-
-		MenuHelper:AddToggle({
-			id = "enabled",
-			title = "enabled_name",
-			desc = "enabled_desc",
-			callback = "Randomizer_toggle",
-			value = PlayerRandomizer.settings.enabled,
-			menu_id = PlayerRandomizer.menu_id,
-			priority = 100
-		})
-		MenuHelper:AddDivider({
-			size = 24,
-			menu_id = PlayerRandomizer.menu_id,
-			priority = 99
-		})
 
 		MenuHelper:AddToggle({
 			id = "hide_selections",
@@ -551,66 +632,6 @@ if not PlayerRandomizer then
 			priority = 10
 		})
 
-		MenuHelper:AddToggle({
-			id = "random_primary",
-			title = "bm_menu_primaries",
-			desc = "primary_desc",
-			callback = "Randomizer_toggle",
-			value = PlayerRandomizer.settings.random_primary,
-			menu_id = PlayerRandomizer.menu_id,
-			priority = 6
-		})
-		MenuHelper:AddToggle({
-			id = "random_secondary",
-			title = "bm_menu_secondaries",
-			desc = "secondary_desc",
-			callback = "Randomizer_toggle",
-			value = PlayerRandomizer.settings.random_secondary,
-			menu_id = PlayerRandomizer.menu_id,
-			priority = 5
-		})
-		MenuHelper:AddToggle({
-			id = "random_melee",
-			title = "bm_menu_melee_weapons",
-			desc = "melee_desc",
-			callback = "Randomizer_toggle",
-			value = PlayerRandomizer.settings.random_melee,
-			menu_id = PlayerRandomizer.menu_id,
-			priority = 4
-		})
-		MenuHelper:AddToggle({
-			id = "random_grenade",
-			title = "bm_menu_grenades",
-			desc = "grenade_desc",
-			callback = "Randomizer_toggle",
-			value = PlayerRandomizer.settings.random_grenade,
-			menu_id = PlayerRandomizer.menu_id,
-			priority = 3
-		})
-		MenuHelper:AddToggle({
-			id = "random_armor",
-			title = "bm_menu_armor",
-			desc = "armor_desc",
-			callback = "Randomizer_toggle",
-			value = PlayerRandomizer.settings.random_armor,
-			menu_id = PlayerRandomizer.menu_id,
-			priority = 2
-		})
-		MenuHelper:AddToggle({
-			id = "random_deployable",
-			title = "bm_menu_deployables",
-			desc = "deployable_desc",
-			callback = "Randomizer_toggle",
-			value = PlayerRandomizer.settings.random_deployable,
-			menu_id = PlayerRandomizer.menu_id,
-			priority = 1
-		})
-		MenuHelper:AddDivider({
-			size = 24,
-			menu_id = PlayerRandomizer.menu_id,
-			priority = 0
-		})
-
 		BLT.Keybinds:register_keybind(PlayerRandomizer.mod_instance, { id = "display_weapon_info", allow_game = true, show_in_menu = false, callback = function()
 			PlayerRandomizer:show_weapon_info()
 		end })
@@ -625,22 +646,6 @@ if not PlayerRandomizer then
 			button = key,
 			menu_id = PlayerRandomizer.menu_id,
 			priority = -11
-		})
-
-		BLT.Keybinds:register_keybind(PlayerRandomizer.mod_instance, { id = "toggle_randomizer", allow_game = true, show_in_menu = false, callback = function()
-			PlayerRandomizer:toggle()
-		end })
-		bind = BLT.Keybinds:get_keybind("toggle_randomizer")
-		key = bind and bind:Key() or ""
-		MenuHelper:AddKeybinding({
-			id = "toggle_randomizer",
-			title = "toggle_randomizer_name",
-			desc = "toggle_randomizer_desc",
-			connection_name = "toggle_randomizer",
-			binding = key,
-			button = key,
-			menu_id = PlayerRandomizer.menu_id,
-			priority = -12
 		})
 
 		BLT.Keybinds:register_keybind(PlayerRandomizer.mod_instance, { id = "reroll_randomizer", allow_game = true, show_in_menu = false, callback = function()
