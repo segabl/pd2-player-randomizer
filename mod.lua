@@ -164,7 +164,8 @@ if not PlayerRandomizer then
 	end
 
 	function PlayerRandomizer:allow_randomizing()
-		return Utils:IsInGameState() and self:is_current_profile_randomized()
+		local state_name = game_state_machine and game_state_machine:current_state_name() or ""
+		return state_name:find("ingame") and not state_name:find("ingame_lobby_menu") and self:is_current_profile_randomized()
 	end
 
 	function PlayerRandomizer:is_randomized(selection)
@@ -205,7 +206,7 @@ if not PlayerRandomizer then
 		local blacklisted = table.list_to_set(self.blacklist.weapons)
 		for weapon, data in pairs(tweak_data.weapon) do
 			if data.autohit then
-				local disabled = blacklisted[weapon] or self.settings["weapon_" .. data.categories[1]] == false
+				local disabled = blacklisted[weapon] or self.settings["weapon_" .. data.categories[1]] == false or data.global_value == "super_serious_shooter_weapon"
 				if not disabled and Global.blackmarket_manager.weapons[weapon].unlocked then
 					local selection_index = data.use_data.selection_index
 					self.weapons[selection_index] = self.weapons[selection_index] or {}
@@ -266,7 +267,7 @@ if not PlayerRandomizer then
 				local filtered_parts = table.filter_list(parts, function (part)
 					local part_id = part[1]
 					local part_data = tweak_data.weapon.factory.parts[part_id]
-					return not part_data.unatainable and not forbidden[part_id] and not blacklisted[part_id] and not managers.weapon_factory:_get_forbidden_parts(data.factory_id, data.blueprint)[part_id]
+					return not part_data.unatainable and not forbidden[part_id] and not blacklisted[part_id] and not managers.weapon_factory:_get_forbidden_parts(data.factory_id, data.blueprint)[part_id] and part_data.global_value ~= "super_serious_shooter_part"
 				end)
 				local part = table.random(filtered_parts)
 				if part then
@@ -289,7 +290,7 @@ if not PlayerRandomizer then
 
 		for slot, data in pairs(Global.blackmarket_manager.crafted_items["primaries"]) do
 			local unlocked = managers.blackmarket:weapon_unlocked_by_crafted("primaries", slot)
-			if unlocked then
+			if unlocked and data.global_value ~= "super_serious_shooter_weapon" then
 				data.slot = slot
 				table.insert(self.weapons_owned[2], data)
 			end
@@ -297,7 +298,7 @@ if not PlayerRandomizer then
 
 		for slot, data in pairs(Global.blackmarket_manager.crafted_items["secondaries"]) do
 			local unlocked = managers.blackmarket:weapon_unlocked_by_crafted("secondaries", slot)
-			if unlocked then
+			if unlocked and data.global_value ~= "super_serious_shooter_weapon" then
 				data.slot = slot
 				table.insert(self.weapons_owned[1], data)
 			end
