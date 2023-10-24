@@ -224,7 +224,7 @@ if not PlayerRandomizer then
 			local color_tweak = tweak_data.blackmarket.weapon_skins[v]
 			local dlc = color_tweak.dlc or managers.dlc:global_value_to_dlc(color_tweak.global_value)
 			local unlocked = not dlc or managers.dlc:is_dlc_unlocked(dlc)
-			local have_color = managers.blackmarket:has_item(color_tweak.global_value, "weapon_skins", v)
+			local have_color = not color_tweak.global_value or managers.blackmarket:has_item(color_tweak.global_value, "weapon_skins", v)
 			return unlocked and have_color
 		end)
 	end
