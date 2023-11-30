@@ -205,7 +205,7 @@ if not PlayerRandomizer then
 
 		local blacklisted = table.list_to_set(self.blacklist.weapons)
 		for weapon, data in pairs(tweak_data.weapon) do
-			if data.autohit then
+			if data.autohit ~= nil then
 				local disabled = blacklisted[weapon] or self.settings["weapon_" .. data.categories[1]] == false or data.global_value == "super_serious_shooter_weapon"
 				if not disabled and Global.blackmarket_manager.weapons[weapon].unlocked then
 					local selection_index = data.use_data.selection_index
